@@ -21,3 +21,5 @@ documentation/html
 *.a
 *.i
 *.d
+.idea/
+bsp/stm32f10x/project.cbp
