@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+  <FileVersion major="1" minor="6" />
+  <Project>
+    <Option title="project" />
+    <Option pch_mode="2" />
+    <Option compiler="gcc" />
+    <Build>
+      <Target title="Debug">
+        <Option extension_auto="1" output="build/bin/Debug/project" prefix_auto="1" />
+        <Option object_output="build/obj/Debug/" />
+        <Option type="1" />
+        <Option compiler="gcc" />
+        <Compiler>
+          <Add option="-g" />
+          <Add directory="." />
+          <Add directory="..\..\components\CMSIS\Include" />
+          <Add directory="..\..\components\drivers\include" />
+          <Add directory="..\..\components\finsh" />
+          <Add directory="..\..\include" />
+          <Add directory="..\..\libcpu\arm\common" />
+          <Add directory="..\..\libcpu\arm\cortex-m3" />
+          <Add directory="Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x" />
+          <Add directory="Libraries\STM32F10x_StdPeriph_Driver\inc" />
+          <Add directory="applications" />
+          <Add directory="drivers" />
+          <Add option="-DUSE_STDPERIPH_DRIVER" />
+          <Add option="-DSTM32F10X_HD" />
+        </Compiler>
+      </Target>
+      <Target title="Release">
+        <Option extension_auto="1" output="build/bin/Release/project" prefix_auto="1" />
+        <Option object_output="build/obj/Release/" />
+        <Option type="1" />
+        <Option compiler="gcc" />
+        <Compiler>
+          <Add option="-O2" />
+        </Compiler>
+        <Linker>
+          <Add option="-s" />
+        </Linker>
+      </Target>
+    </Build>
+    <Compiler>
+      <Add option="-Wall" />
+    </Compiler>
+    <Extensions>
+      <code_completion />
+      <envvars />
+      <debugger />
+      <lib_finder disable_auto="1" />
+    </Extensions>
+    <Unit filename="applications\application.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="applications\startup.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="applications\canapp.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="drivers\board.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="drivers\stm32f10x_it.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="drivers\led.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="drivers\usart.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="drivers\gpio.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="drivers\bxcan.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\system_stm32f10x.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_crc.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rcc.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_wwdg.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_pwr.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_exti.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_bkp.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_i2c.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_adc.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dac.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rtc.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_fsmc.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_tim.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_iwdg.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_spi.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_flash.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_sdio.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_gpio.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_usart.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dbgmcu.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dma.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_can.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_cec.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\src\misc.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\arm\startup_stm32f10x_hd.s">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\clock.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\components.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\device.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\idle.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\ipc.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\irq.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\kservice.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\mem.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\mempool.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\object.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\scheduler.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\thread.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\src\timer.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\libcpu\arm\cortex-m3\cpuport.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\libcpu\arm\cortex-m3\context_rvds.S">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\libcpu\arm\common\backtrace.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\libcpu\arm\common\div0.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\libcpu\arm\common\showmem.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\can\can.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\misc\pin.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\serial\serial.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\src\completion.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\src\dataqueue.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\src\pipe.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\src\portal.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\src\ringbuffer.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\drivers\src\workqueue.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\shell.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\symbol.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\cmd.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_compiler.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_error.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_heap.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_init.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_node.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_ops.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_parser.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_var.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_vm.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="..\..\components\finsh\finsh_token.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h" />
+    <Unit filename="Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\system_stm32f10x.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\misc.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_adc.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_bkp.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_can.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_cec.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_crc.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_dac.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_dbgmcu.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_dma.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_exti.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_flash.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_fsmc.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_gpio.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_i2c.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_iwdg.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_pwr.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_rcc.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_rtc.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_sdio.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_spi.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_tim.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_usart.h" />
+    <Unit filename="Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_wwdg.h" />
+    <Unit filename="drivers\board.h" />
+    <Unit filename="drivers\bxcan.h" />
+    <Unit filename="drivers\gpio.h" />
+    <Unit filename="drivers\led.h" />
+    <Unit filename="drivers\stm32f10x_conf.h" />
+    <Unit filename="drivers\stm32f10x_it.h" />
+    <Unit filename="drivers\usart.h" />
+    <Unit filename="rtconfig.h" />
+    <Unit filename="..\..\components\CMSIS\Include\core_cm3.h" />
+    <Unit filename="..\..\components\CMSIS\Include\core_cmFunc.h" />
+    <Unit filename="..\..\components\CMSIS\Include\core_cmInstr.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\alarm.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\audio.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\can.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\hwtimer.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\i2c-bit-ops.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\i2c.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\i2c_dev.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\mmcsd_card.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\mmcsd_cmd.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\mmcsd_core.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\mmcsd_host.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\mtd_nand.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\mtd_nor.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\pin.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\rtc.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\sd.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\sdio.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\sdio_func_ids.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\serial.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\spi.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\usb_common.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\usb_device.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\usb_host.h" />
+    <Unit filename="..\..\components\drivers\include\drivers\watchdog.h" />
+    <Unit filename="..\..\components\drivers\include\rtdevice.h" />
+    <Unit filename="..\..\components\finsh\finsh.h" />
+    <Unit filename="..\..\components\finsh\finsh_error.h" />
+    <Unit filename="..\..\components\finsh\finsh_heap.h" />
+    <Unit filename="..\..\components\finsh\finsh_node.h" />
+    <Unit filename="..\..\components\finsh\finsh_ops.h" />
+    <Unit filename="..\..\components\finsh\finsh_parser.h" />
+    <Unit filename="..\..\components\finsh\finsh_token.h" />
+    <Unit filename="..\..\components\finsh\finsh_var.h" />
+    <Unit filename="..\..\components\finsh\finsh_vm.h" />
+    <Unit filename="..\..\components\finsh\msh.h" />
+    <Unit filename="..\..\components\finsh\shell.h" />
+    <Unit filename="..\..\include\components.h" />
+    <Unit filename="..\..\include\rtdebug.h" />
+    <Unit filename="..\..\include\rtdef.h" />
+    <Unit filename="..\..\include\rthw.h" />
+    <Unit filename="..\..\include\rtm.h" />
+    <Unit filename="..\..\include\rtservice.h" />
+    <Unit filename="..\..\include\rtthread.h" />
+  </Project>
+</CodeBlocks_project_file>
