@@ -22,20 +22,26 @@
 #ifndef _PORT_H
 #define _PORT_H
 
-#include <stm32f10x_conf.h>
+#include <mcu_def.h>
+
 #include "mbconfig.h"
+
+#ifdef RT_THREAD
 #include <rthw.h>
 #include <rtthread.h>
+#include <inttypes.h>
+#endif
 
 #include <assert.h>
-#include <inttypes.h>
 
 #define INLINE
 #define PR_BEGIN_EXTERN_C           extern "C" {
 #define PR_END_EXTERN_C             }
 
+#ifdef RT_THREAD
 #define ENTER_CRITICAL_SECTION()    EnterCriticalSection()
 #define EXIT_CRITICAL_SECTION()    ExitCriticalSection()
+#endif
 
 typedef uint8_t BOOL;
 

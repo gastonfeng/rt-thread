@@ -6,7 +6,7 @@
 
 #include "s3c24x0.h"
 
-#define	USTAT_RCV_READY		0x01   	/* receive data ready */ 
+#define	USTAT_RCV_READY		0x01   	/* receive data ready */
 #define	USTAT_TXB_EMPTY		0x02   	/* tx buffer empty */
 #define BPS					115200	/* serial baudrate */
 
@@ -35,15 +35,15 @@ typedef struct uartport
 	volatile rt_uint32_t urxb;
 	volatile rt_uint32_t ufstat;
 	volatile rt_uint32_t umstat;
-	volatile rt_uint32_t utxh;	
-	volatile rt_uint32_t urxh;	
+	volatile rt_uint32_t utxh;
+	volatile rt_uint32_t urxh;
 	volatile rt_uint32_t ubrd;
 }uartport;
 
 struct serial_device
 {
 	uartport* uart_device;
-	
+
 	/* rx structure */
 	struct serial_int_rx* int_rx;
 
@@ -51,8 +51,8 @@ struct serial_device
 	struct serial_int_tx* int_tx;
 };
 
-rt_err_t rt_hw_serial_register(rt_device_t device, const char* name, rt_uint32_t flag, struct serial_device *serial);
-
-void rt_hw_serial_isr(rt_device_t device);
+//	rt_err_t rt_hw_serial_register(rt_device_t device, const char* name, rt_uint32_t flag, struct serial_device *serial);
+//
+//	void rt_hw_serial_isr(rt_device_t device);
 
 #endif
