@@ -787,6 +787,8 @@ enum rt_device_class_type
 #define RT_DEVICE_FLAG_DMA_RX           0x200           /**< DMA mode on Rx */
 #define RT_DEVICE_FLAG_INT_TX           0x400           /**< INT mode on Tx */
 #define RT_DEVICE_FLAG_DMA_TX           0x800           /**< DMA mode on Tx */
+#define RT_DEVICE_FLAG_RS485_TOGGLE     0x1000           /**< RS485µ¥¹¤·¢ËÍ£¬´øÊÕ·¢¿ØÖÆÒý½Å */
+#define RT_DEVICE_FLAG_RS422_TOGGLE     0x2000           /**< RS422Ë«¹¤·¢ËÍ£¬´øÊÕ·¢¿ØÖÆÒý½Å */
 
 #define RT_DEVICE_OFLAG_CLOSE           0x000           /**< device is closed */
 #define RT_DEVICE_OFLAG_RDONLY          0x001           /**< read only access */
@@ -799,7 +801,9 @@ enum rt_device_class_type
  */
 #define RT_DEVICE_CTRL_RESUME           0x01            /**< resume device */
 #define RT_DEVICE_CTRL_SUSPEND          0x02            /**< suspend device */
-
+#define RT_DEVICE_CTRL_SETUP            0x03            /**<´®¿Ú²¨ÌØÂÊÉèÖÃ*/
+#define RT_DEVICE_CTRL_SELECT           0x04            /**<Êý¾Ý¼àÊÓ*/
+#define RT_DEVICE_CTRL_CLEAR            0x05            /**<Êý¾ÝÇå³ý*/
 /**
  * special device commands
  */

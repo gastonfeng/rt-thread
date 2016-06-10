@@ -474,7 +474,10 @@ RTM_EXPORT(rt_strcmp);
 rt_size_t rt_strlen(const char *s)
 {
     const char *sc;
-
+    if(!s)
+    {
+        return 0;
+    }
     for (sc = s; *sc != '\0'; ++sc) /* nothing */
         ;
 
@@ -515,6 +518,15 @@ void rt_show_version(void)
     rt_kprintf(" / | \\     %d.%d.%d build %s\n",
                RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__);
     rt_kprintf(" 2006 - 2016 Copyright by rt-thread team\n");
+	print_cpuinfo();
+    if(IsLittleEndian())
+    {
+        rt_kprintf("\nLittleEndian.\n");
+    }
+    else
+    {
+        rt_kprintf("\nLargeEndian.\n");
+    }
 }
 RTM_EXPORT(rt_show_version);
 

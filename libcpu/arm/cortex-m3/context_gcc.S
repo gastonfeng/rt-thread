@@ -36,8 +36,8 @@
     .global rt_hw_interrupt_disable
     .type rt_hw_interrupt_disable, %function
 rt_hw_interrupt_disable:
-    MRS     R0, PRIMASK
-    CPSID   I
+MRS     R0, PRIMASK /*把当前的全局中断标志状态保存到R0寄存器*/
+CPSID   I       /*关中断*/
     BX      LR
 
 /*
