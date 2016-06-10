@@ -133,6 +133,27 @@ static rt_size_t mem_size_aligned;
 static rt_size_t used_mem, max_mem;
 #endif
 
+unsigned short get_total_mem()
+{
+    return mem_size_aligned/1024;
+}
+
+unsigned int get_used_mem()
+{
+    return used_mem;
+}
+
+unsigned short get_remain_mem()
+{
+    return (heap_end-lfree)/1024;
+}
+
+unsigned int get_max_mem()
+{
+    return max_mem;
+}
+
+
 static void plug_holes(struct heap_mem *mem)
 {
     struct heap_mem *nmem;
@@ -264,7 +285,7 @@ void *rt_malloc(rt_size_t size)
 
     if (size > mem_size_aligned)
     {
-        RT_DEBUG_LOG(RT_DEBUG_MEM, ("no memory\n"));
+        RT_DEBUG_LOG(RT_DEBUG_MEM, ("no memory :size=0x%x ,mem_size =0x%x %s %d\n",size ,mem_size_aligned ,__FILE__,__LINE__));
 
         return RT_NULL;
     }
@@ -282,7 +303,14 @@ void *rt_malloc(rt_size_t size)
     {
         mem = (struct heap_mem *)&heap_ptr[ptr];
 
-        if ((!mem->used) && (mem->next - (ptr + SIZEOF_STRUCT_MEM)) >= size)
+//          RT_ASSERT((int)ptr<((int)heap_end-(int)lfree));
+        RT_ASSERT((int)mem<(int)(heap_end));
+        RT_ASSERT((int)mem>=(int)(heap_ptr));
+        RT_ASSERT(mem->magic==HEAP_MAGIC);
+        RT_ASSERT((mem->used==0) ||(mem->used==1));
+
+        RT_DEBUG_LOG(RT_DEBUG_MEM, ("memory :mem=0x%p ,ptr =0x%p,used=%d next=0x%x %s %d\n",mem ,ptr ,mem->used,mem->next,__FILE__,__LINE__));
+        if((!mem->used) && (mem->next - (ptr + SIZEOF_STRUCT_MEM)) >= size)
         {
             /* mem is not used and at least perfect fit is possible:
              * mem->next - (ptr + SIZEOF_STRUCT_MEM) gives us the 'user data size' of mem */
@@ -369,6 +397,7 @@ void *rt_malloc(rt_size_t size)
         }
     }
 
+    rt_kprintf("\n *** mem not enough ,lfree=0x%x , malloc size =0x%x %s,L%d\n",lfree,size,__FILE__,__LINE__);
     rt_sem_release(&heap_sem);
 
     return RT_NULL;
