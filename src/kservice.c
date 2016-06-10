@@ -508,6 +508,24 @@ char *rt_strdup(const char *s)
 RTM_EXPORT(rt_strdup);
 #endif
 
+int IsLittleEndian()//原理：联合体union的存放顺序是所有成员都从低地址开始存放，而且所有成员共享存储空间
+{
+    union temp
+    {
+        short int a;
+        char b;
+    } temp;
+    temp.a = 0x1234;
+    if(temp.b == 0x12)  //低字节存的是数据的高字节数据
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
 /**
  * This function will show the version of rt-thread rtos
  */
@@ -1294,7 +1312,7 @@ void rt_assert_handler(const char* ex_string, const char* func, rt_size_t line)
 	else
 	{
         rt_assert_hook(ex_string, func, line);
-    }                                                                     
+    }
 }
 RTM_EXPORT(rt_assert_handler);
 #endif /* RT_DEBUG */
