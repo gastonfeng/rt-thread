@@ -252,9 +252,9 @@ void SystemInit (void)
 #endif /* STM32F10X_CL */
     
 #if defined (STM32F10X_HD) || (defined STM32F10X_XL) || (defined STM32F10X_HD_VL)
-  #ifdef DATA_IN_ExtSRAM
+//	#ifdef DATA_IN_ExtSRAM
     SystemInit_ExtMemCtl(); 
-  #endif /* DATA_IN_ExtSRAM */
+//	#endif /* DATA_IN_ExtSRAM */
 #endif 
 
   /* Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers */
@@ -452,16 +452,12 @@ static void SetSysClock(void)
   * @param  None
   * @retval None
   */ 
-void SystemInit_ExtMemCtl(void) 
-{
 /*!< FSMC Bank1 NOR/SRAM3 is used for the STM3210E-EVAL, if another Bank is 
   required, then adjust the Register Addresses */
 
   /* Enable FSMC clock */
-  RCC->AHBENR = 0x00000114;
   
   /* Enable GPIOD, GPIOE, GPIOF and GPIOG clocks */  
-  RCC->APB2ENR = 0x000001E0;
   
 /* ---------------  SRAM Data lines, NOE and NWE configuration ---------------*/
 /*----------------  SRAM Address lines configuration -------------------------*/
@@ -469,24 +465,13 @@ void SystemInit_ExtMemCtl(void)
 /*----------------  NE3 configuration ----------------------------------------*/
 /*----------------  NBL0, NBL1 configuration ---------------------------------*/
   
-  GPIOD->CRL = 0x44BB44BB;  
-  GPIOD->CRH = 0xBBBBBBBB;
 
-  GPIOE->CRL = 0xB44444BB;  
-  GPIOE->CRH = 0xBBBBBBBB;
 
-  GPIOF->CRL = 0x44BBBBBB;  
-  GPIOF->CRH = 0xBBBB4444;
 
-  GPIOG->CRL = 0x44BBBBBB;  
-  GPIOG->CRH = 0x44444B44;
    
 /*----------------  FSMC Configuration ---------------------------------------*/  
 /*----------------  Enable FSMC Bank1_SRAM Bank ------------------------------*/
   
-  FSMC_Bank1->BTCR[4] = 0x00001011;
-  FSMC_Bank1->BTCR[5] = 0x00000200;
-}
 #endif /* DATA_IN_ExtSRAM */
 
 #ifdef SYSCLK_FREQ_HSE
