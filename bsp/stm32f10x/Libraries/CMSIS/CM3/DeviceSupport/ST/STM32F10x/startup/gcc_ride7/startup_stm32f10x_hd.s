@@ -66,23 +66,96 @@ defined in linker script */
   .type  Reset_Handler, %function
 Reset_Handler:  
 
-/* Copy the data segment initializers from flash to SRAM */  
+#if EXT_MEM_INIT
+/*
+AHB外设时钟使能寄存器 (RCC_AHBENR)
+使能FSMC,SRAM,NOR
+*/
+LDR R0,= 0x00000114
+LDR R1,= 0x40021014
+STR R0,[R1]
+
+
+/*
+APB2外设时钟使能寄存器(RCC_APB2ENR)
+使能端口时钟
+*/
+LDR R0,= 0x000001E0
+LDR R1,= 0x40021018
+STR R0,[R1]
+
+/*
+端口配置低寄存器(GPIOx_CRL) (x=A..E)
+*/
+LDR R0,= 0x44BB44BB
+LDR R1,= 0x40011400
+STR R0,[R1]
+
+/*端口配置高寄存器(GPIOx_CRH) (x=A..E)*/
+LDR R0,= 0xBBBBBBBB
+LDR R1,= 0x40011404
+STR R0,[R1]
+
+LDR R0,= 0xBBBBB4BB
+LDR R1,= 0x40011800
+STR R0,[R1]
+
+LDR R0,= 0xBBBBBBBB
+LDR R1,= 0x40011804
+STR R0,[R1]
+
+LDR R0,= 0x44BBBBBB
+LDR R1,= 0x40011C00
+STR R0,[R1]
+
+LDR R0,= 0xBBBB4444
+LDR R1,= 0x40011C04
+STR R0,[R1]
+
+LDR R0,= 0x44BBBBBB
+LDR R1,= 0x40012000
+STR R0,[R1]
+
+LDR R0,= 0x444B4B44
+LDR R1,= 0x40012004
+STR R0,[R1]
+
+/*
+SRAM/NOR闪存片选控制寄存器 2
+*/
+LDR R0,= 0x00001011
+LDR R1,= 0xA0000010
+STR R0,[R1]
+
+/*
+SRAM/NOR闪存片选时序寄存器 2
+*/
+LDR R0,= 0x0200
+LDR R1,= 0xA0000014
+STR R0,[R1]
+#endif
+
+  ldr sp, = _estack
+/* Call the clock system intitialization function.*/
+  bl  SystemInit
+
+/* Copy the data segment initializers from flash to SRAM */
   movs  r1, #0
   b  LoopCopyDataInit
 
 CopyDataInit:
-  ldr  r3, =_sidata
+  ldr  r3, =_sidata         /*数据在ROM中的地址*/
   ldr  r3, [r3, r1]
   str  r3, [r0, r1]
   adds  r1, r1, #4
     
 LoopCopyDataInit:
-  ldr  r0, =_sdata
-  ldr  r3, =_edata
+  ldr  r0, =_sdata          /*/数据在RAM的起始地址*/
+  ldr  r3, =_edata          /*/数据在RAM中的结束地址*/
   adds  r2, r0, r1
   cmp  r2, r3
   bcc  CopyDataInit
-  ldr  r2, =_sbss
+  ldr  r2, =_sbss           /*/无需初始化的变量起始地址*/
   b  LoopFillZerobss
 /* Zero fill the bss segment. */  
 FillZerobss:
@@ -90,11 +163,10 @@ FillZerobss:
   str  r3, [r2], #4
     
 LoopFillZerobss:
-  ldr  r3, = _ebss
+  ldr  r3, = _ebss          /*/将_sbss -> _ebss的区域清零*/
   cmp  r2, r3
   bcc  FillZerobss
-/* Call the clock system intitialization function.*/
-  bl  SystemInit   
+
 /* Call the application's entry point.*/
   bl  main
   bx  lr    
