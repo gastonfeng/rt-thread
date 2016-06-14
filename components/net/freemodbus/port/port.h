@@ -32,7 +32,17 @@
 #include <inttypes.h>
 #endif
 
+#ifdef STM8S003
+#define assert(expr) \
+	{ \
+	if (!(expr)) \
+		{ \
+		while(1); \
+		} \
+	}
+#else
 #include <assert.h>
+#endif
 
 #define INLINE
 #define PR_BEGIN_EXTERN_C           extern "C" {
@@ -41,6 +51,10 @@
 #ifdef RT_THREAD
 #define ENTER_CRITICAL_SECTION()    EnterCriticalSection()
 #define EXIT_CRITICAL_SECTION()    ExitCriticalSection()
+#else
+#define ENTER_CRITICAL_SECTION()
+#define EXIT_CRITICAL_SECTION()
+
 #endif
 
 typedef uint8_t BOOL;

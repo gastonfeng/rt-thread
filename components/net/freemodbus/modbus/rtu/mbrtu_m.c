@@ -1,4 +1,4 @@
-/* 
+/*
  * FreeModbus Libary: A portable Modbus implementation for Modbus ASCII/RTU.
  * Copyright (c) 2013 China Beijing Armink <armink.ztl@gmail.com>
  * All rights reserved.
@@ -62,14 +62,14 @@ typedef enum
     STATE_M_RX_INIT,              /*!< Receiver is in initial state. */
     STATE_M_RX_IDLE,              /*!< Receiver is in idle state. */
     STATE_M_RX_RCV,               /*!< Frame is beeing received. */
-    STATE_M_RX_ERROR,              /*!< If the frame is invalid. */
+    STATE_M_RX_ERROR              /*!< If the frame is invalid. */
 } eMBMasterRcvState;
 
 typedef enum
 {
     STATE_M_TX_IDLE,              /*!< Transmitter is in idle state. */
     STATE_M_TX_XMIT,              /*!< Transmitter is in transfer state. */
-    STATE_M_TX_XFWR,              /*!< Transmitter is in transfer finish and wait receive state. */
+    STATE_M_TX_XFWR              /*!< Transmitter is in transfer finish and wait receive state. */
 } eMBMasterSndState;
 
 /* ----------------------- Static variables ---------------------------------*/

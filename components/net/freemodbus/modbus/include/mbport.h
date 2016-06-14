@@ -1,4 +1,4 @@
-/* 
+/*
  * FreeModbus Libary: A portable Modbus implementation for Modbus ASCII/RTU.
  * Copyright (c) 2006 Christian Walter <wolti@sil.at>
  * All rights reserved.
@@ -58,14 +58,14 @@ typedef enum
     EV_MASTER_PROCESS_SUCESS           = 1<<5,  /*!< Request process success. */
     EV_MASTER_ERROR_RESPOND_TIMEOUT    = 1<<6,  /*!< Request respond timeout. */
     EV_MASTER_ERROR_RECEIVE_DATA       = 1<<7,  /*!< Request receive data error. */
-    EV_MASTER_ERROR_EXECUTE_FUNCTION   = 1<<8,  /*!< Request execute function error. */
+    EV_MASTER_ERROR_EXECUTE_FUNCTION   = 1<<8  /*!< Request execute function error. */
 } eMBMasterEventType;
 
 typedef enum
 {
     EV_ERROR_RESPOND_TIMEOUT,         /*!< Slave respond timeout. */
     EV_ERROR_RECEIVE_DATA,            /*!< Receive frame data erroe. */
-    EV_ERROR_EXECUTE_FUNCTION,        /*!< Execute function error. */
+    EV_ERROR_EXECUTE_FUNCTION        /*!< Execute function error. */
 } eMBMasterErrorEventType;
 
 /*! \ingroup modbus
