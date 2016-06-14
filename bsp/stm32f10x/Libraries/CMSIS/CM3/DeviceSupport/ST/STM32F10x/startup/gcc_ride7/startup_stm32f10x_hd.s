@@ -329,10 +329,10 @@ g_pfnVectors:
     
   .weak  NMI_Handler
   .thumb_set NMI_Handler,Default_Handler
-  
+  /*
   .weak  HardFault_Handler
   .thumb_set HardFault_Handler,Default_Handler
-  
+  */
   .weak  MemManage_Handler
   .thumb_set MemManage_Handler,Default_Handler
   
@@ -347,7 +347,7 @@ g_pfnVectors:
 
   .weak  DebugMon_Handler
   .thumb_set DebugMon_Handler,Default_Handler
-
+/*
   .weak  PendSV_Handler
   .thumb_set PendSV_Handler,Default_Handler
 
@@ -356,7 +356,7 @@ g_pfnVectors:
 
   .weak  WWDG_IRQHandler
   .thumb_set WWDG_IRQHandler,Default_Handler
-
+*/
   .weak  PVD_IRQHandler
   .thumb_set PVD_IRQHandler,Default_Handler
 
@@ -371,7 +371,7 @@ g_pfnVectors:
 
   .weak  RCC_IRQHandler
   .thumb_set RCC_IRQHandler,Default_Handler
-
+/*
   .weak  EXTI0_IRQHandler
   .thumb_set EXTI0_IRQHandler,Default_Handler
 
@@ -386,7 +386,7 @@ g_pfnVectors:
 
   .weak  EXTI4_IRQHandler
   .thumb_set EXTI4_IRQHandler,Default_Handler
-
+*/
   .weak  DMA1_Channel1_IRQHandler
   .thumb_set DMA1_Channel1_IRQHandler,Default_Handler
 
@@ -408,7 +408,7 @@ g_pfnVectors:
   .weak  DMA1_Channel7_IRQHandler
   .thumb_set DMA1_Channel7_IRQHandler,Default_Handler
 
-  .weak  ADC1_2_IRQHandler
+ /* .weak  ADC1_2_IRQHandler
   .thumb_set ADC1_2_IRQHandler,Default_Handler
 
   .weak  USB_HP_CAN1_TX_IRQHandler
@@ -416,16 +416,16 @@ g_pfnVectors:
 
   .weak  USB_LP_CAN1_RX0_IRQHandler
   .thumb_set USB_LP_CAN1_RX0_IRQHandler,Default_Handler
-
+*/
   .weak  CAN1_RX1_IRQHandler
   .thumb_set CAN1_RX1_IRQHandler,Default_Handler
 
   .weak  CAN1_SCE_IRQHandler
   .thumb_set CAN1_SCE_IRQHandler,Default_Handler
 
-  .weak  EXTI9_5_IRQHandler
+ /* .weak  EXTI9_5_IRQHandler
   .thumb_set EXTI9_5_IRQHandler,Default_Handler
-
+*/
   .weak  TIM1_BRK_IRQHandler
   .thumb_set TIM1_BRK_IRQHandler,Default_Handler
 
@@ -474,15 +474,15 @@ g_pfnVectors:
   .weak  USART3_IRQHandler
   .thumb_set USART3_IRQHandler,Default_Handler
 
-  .weak  EXTI15_10_IRQHandler
+  /*.weak  EXTI15_10_IRQHandler
   .thumb_set EXTI15_10_IRQHandler,Default_Handler
-
+*/
   .weak  RTCAlarm_IRQHandler
   .thumb_set RTCAlarm_IRQHandler,Default_Handler
-
+/*
   .weak  USBWakeUp_IRQHandler
   .thumb_set USBWakeUp_IRQHandler,Default_Handler
-
+*/
   .weak  TIM8_BRK_IRQHandler
   .thumb_set TIM8_BRK_IRQHandler,Default_Handler
 
@@ -510,12 +510,12 @@ g_pfnVectors:
   .weak  SPI3_IRQHandler
   .thumb_set SPI3_IRQHandler,Default_Handler
 
-  .weak  UART4_IRQHandler
+/*  .weak  UART4_IRQHandler
   .thumb_set UART4_IRQHandler,Default_Handler
 
   .weak  UART5_IRQHandler
   .thumb_set UART5_IRQHandler,Default_Handler
-
+*/
   .weak  TIM6_IRQHandler
   .thumb_set TIM6_IRQHandler,Default_Handler
 
