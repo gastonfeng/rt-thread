@@ -537,14 +537,6 @@ void rt_show_version(void)
                RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__);
     rt_kprintf(" 2006 - 2016 Copyright by rt-thread team\n");
 	print_cpuinfo();
-    if(IsLittleEndian())
-    {
-        rt_kprintf("\nLittleEndian.\n");
-    }
-    else
-    {
-        rt_kprintf("\nLargeEndian.\n");
-    }
 }
 RTM_EXPORT(rt_show_version);
 

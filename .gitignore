@@ -24,3 +24,4 @@ documentation/html
 *.gcno
 bsp/stm32f10x/project.cbp
 *.ls
+*.gcda

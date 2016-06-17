@@ -106,4 +106,32 @@ void rt_hw_board_init()
     rt_console_set_device(RT_CONSOLE_DEVICE_NAME);
 #endif
 }
+
+void GetLockCode(unsigned int *CpuID)
+{
+    CpuID[0]=-1;
+    CpuID[1]=-1;
+    CpuID[2]=-1;
+}
+
+void print_cpuinfo(void)
+{
+    unsigned int id[3];
+    id[0]=id[1]=id[2]=0;
+
+    rt_kprintf("\nWindows Sim\n");
+
+    GetLockCode(id);
+	rt_kprintf("\n\nSN : %0x-%0x-%0x\n\n",id[0],id[1],id[2]);
+
+    if(IsLittleEndian())
+    {
+        rt_kprintf("\nLittleEndian.\n");
+    }
+    else
+    {
+        rt_kprintf("\nLargeEndian.\n");
+    }
+}
+
 /*@}*/
