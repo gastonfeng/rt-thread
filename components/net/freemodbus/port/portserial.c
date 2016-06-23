@@ -81,17 +81,17 @@ BOOL xMBPortSerialInit(UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits,
     switch(eParity){
     case MB_PAR_NONE: {
         serial->config.data_bits = DATA_BITS_8;
-        serial->config.parity = PARITY_NONE;
+        serial->config.parity = RT_PARITY_NONE;
         break;
     }
     case MB_PAR_ODD: {
         serial->config.data_bits = DATA_BITS_9;
-        serial->config.parity = PARITY_ODD;
+        serial->config.parity = RT_PARITY_ODD;
         break;
     }
     case MB_PAR_EVEN: {
         serial->config.data_bits = DATA_BITS_9;
-        serial->config.parity = PARITY_EVEN;
+        serial->config.parity = RT_PARITY_EVEN;
         break;
     }
     }

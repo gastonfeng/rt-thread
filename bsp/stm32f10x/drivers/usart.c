@@ -16,10 +16,12 @@
  * 2016-05-13     armink       add DMA Rx mode
  */
 
+#include<mcu_def.h>
 #include "stm32f10x.h"
 #include "usart.h"
 #include "board.h"
 #include <rtdevice.h>
+#include <model.h>
 
 /* USART1 */
 #define UART1_GPIO_TX        GPIO_Pin_9
@@ -57,6 +59,8 @@ struct stm32_uart
         /* last receive index */
         rt_size_t last_recv_len;
     } dma;
+    io_def tx_en;   //发送允许
+    io_def rx_en;   //接收允许
 };
 
 static void DMA_Configuration(struct rt_serial_device *serial);
@@ -85,11 +89,11 @@ static rt_err_t stm32_configure(struct rt_serial_device *serial, struct serial_c
         USART_InitStructure.USART_StopBits = USART_StopBits_2;
     }
 
-    if (cfg->parity == PARITY_NONE){
+    if (cfg->parity == RT_PARITY_NONE){
         USART_InitStructure.USART_Parity = USART_Parity_No;
-    } else if (cfg->parity == PARITY_ODD) {
+    } else if (cfg->parity == RT_PARITY_ODD) {
         USART_InitStructure.USART_Parity = USART_Parity_Odd;
-    } else if (cfg->parity == PARITY_EVEN) {
+    } else if (cfg->parity == RT_PARITY_EVEN) {
         USART_InitStructure.USART_Parity = USART_Parity_Even;
     }
 
@@ -612,3 +616,50 @@ void rt_hw_usart_init(void)
                           uart);
 #endif /* RT_USING_UART4 */
 }
+void rs485_to_tx(void *dev)
+{
+	struct rt_serial_device *serial=(struct rt_serial_device *)dev;
+    struct stm32_uart *hw=(struct stm32_uart *)serial->parent.user_data;
+    hw_gpio_out_init(hw->tx_en);
+    hw_gpio_out(hw->tx_en, 1);
+    rt_thread_delay(RT_TICK_PER_SECOND / 1000);
+}
+
+void rs422_to_tx(void *dev)
+{
+	struct rt_serial_device *serial=(struct rt_serial_device *)dev;
+    struct stm32_uart *hw=(struct stm32_uart *)serial->parent.user_data;
+    hw_gpio_out_init(hw->tx_en);
+    hw_gpio_out(hw->tx_en, 1);
+    hw_gpio_out_init(hw->rx_en);
+    hw_gpio_out(hw->rx_en, 1);
+    rt_thread_delay(RT_TICK_PER_SECOND / 1000);
+}
+
+void rs485_to_rx(void *dev)
+{
+	struct rt_serial_device *serial=(struct rt_serial_device *)dev;
+    struct stm32_uart *hw=(struct stm32_uart *)serial->parent.user_data;
+#ifdef STM32
+    while(!(hw->uart_device->SR & USART_FLAG_TC));
+#else
+    while(!(hw->uart_device->ustat & USTAT_EMPTY));
+#endif
+//	    rt_thread_delay(RT_TICK_PER_SECOND / 1000);
+    hw_gpio_out(hw->tx_en, 0);
+}
+
+void rs422_to_rx(void *dev)
+{
+	struct rt_serial_device *serial=(struct rt_serial_device *)dev;
+    struct stm32_uart *hw=(struct stm32_uart *)serial->parent.user_data;
+#ifdef STM32
+    while(!(hw->uart_device->SR & USART_FLAG_TC));
+#else
+    while(!(hw->uart_device->ustat & USTAT_EMPTY));
+#endif
+    rt_thread_delay(2);
+    hw_gpio_out(hw->tx_en, 0);
+    hw_gpio_out(hw->rx_en, 0);
+}
+

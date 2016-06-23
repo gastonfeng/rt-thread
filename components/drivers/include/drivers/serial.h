@@ -54,9 +54,9 @@
 #define STOP_BITS_3                     2
 #define STOP_BITS_4                     3
 
-#define PARITY_NONE                     0
-#define PARITY_ODD                      1
-#define PARITY_EVEN                     2
+#define RT_PARITY_NONE                     0
+#define RT_PARITY_ODD                      1
+#define RT_PARITY_EVEN                     2
 
 #define BIT_ORDER_LSB                   0
 #define BIT_ORDER_MSB                   1
@@ -93,7 +93,7 @@
     BAUD_RATE_115200, /* 115200 bits/s */  \
     DATA_BITS_8,      /* 8 databits */     \
     STOP_BITS_1,      /* 1 stopbit */      \
-    PARITY_NONE,      /* No parity  */     \
+    RT_PARITY_NONE,      /* No parity  */     \
     BIT_ORDER_LSB,    /* LSB first sent */ \
     NRZ_NORMAL,       /* Normal mode */    \
     RT_SERIAL_RB_BUFSZ, /* Buffer size */  \
@@ -114,7 +114,7 @@ struct serial_configure
 };
 
 /*
- * Serial FIFO mode 
+ * Serial FIFO mode
  */
 struct rt_serial_rx_fifo
 {
@@ -124,12 +124,14 @@ struct rt_serial_rx_fifo
     rt_uint16_t put_index, get_index;
 };
 
+#include<rtdevice.h>
+
 struct rt_serial_tx_fifo
 {
     struct rt_completion completion;
 };
 
-/* 
+/*
  * Serial DMA mode
  */
 struct rt_serial_rx_dma
@@ -147,8 +149,15 @@ struct rt_serial_device
 {
     struct rt_device          parent;
 
-    const struct rt_uart_ops *ops;
+    struct rt_uart_ops *ops;
     struct serial_configure   config;
+    rt_sem_t lock;
+#ifdef WIN32
+		const char *name;
+		void *fd;
+		int isOpened;
+		//		struct rt_serial_rx_fifo *win32_fifo;
+#endif
 
     void *serial_rx;
     void *serial_tx;
@@ -165,6 +174,9 @@ struct rt_uart_ops
 
     int (*putc)(struct rt_serial_device *serial, char c);
     int (*getc)(struct rt_serial_device *serial);
+
+    void (*cb_sendBefore)(void *);
+    void (*cb_sendComplete)(void *);
 
     rt_size_t (*dma_transmit)(struct rt_serial_device *serial, rt_uint8_t *buf, rt_size_t size, int direction);
 };

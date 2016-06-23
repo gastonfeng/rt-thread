@@ -33,6 +33,7 @@
  * 2016-05-10     armink       add fifo mode to DMA rx when serial->config.bufsz != 0.
  */
 
+#include <mcu_def.h>
 #include <rthw.h>
 #include <rtthread.h>
 #include <rtdevice.h>
@@ -453,7 +454,7 @@ static rt_err_t rt_serial_open(struct rt_device *dev, rt_uint16_t oflag)
             serial->serial_tx = RT_NULL;
         }
     }
-
+	if(serial->ops->cb_sendComplete)serial->ops->cb_sendComplete(serial);
     return RT_EOK;
 }
 
@@ -561,24 +562,32 @@ static rt_size_t rt_serial_write(struct rt_device *dev,
                                  rt_size_t         size)
 {
     struct rt_serial_device *serial;
-
+	uint8_t num;
     RT_ASSERT(dev != RT_NULL);
     if (size == 0) return 0;
 
     serial = (struct rt_serial_device *)dev;
-
+    if(serial->ops->cb_sendBefore)
+    {
+        serial->ops->cb_sendBefore(serial);
+    }
     if (dev->open_flag & RT_DEVICE_FLAG_INT_TX)
     {
-        return _serial_int_tx(serial, buffer, size);
+        num =  _serial_int_tx(serial, (rt_uint8_t *)buffer, size);
     }
     else if (dev->open_flag & RT_DEVICE_FLAG_DMA_TX)
     {
-        return _serial_dma_tx(serial, buffer, size);
+        num =  _serial_dma_tx(serial, (rt_uint8_t *)buffer, size);
     }
     else
     {
-        return _serial_poll_tx(serial, buffer, size);
+        num = _serial_poll_tx(serial, (rt_uint8_t *)buffer, size);
     }
+    if(serial->ops->cb_sendComplete)
+    {
+        serial->ops->cb_sendComplete(serial);
+    }
+    return num;
 }
 
 static rt_err_t rt_serial_control(struct rt_device *dev,
@@ -586,6 +595,7 @@ static rt_err_t rt_serial_control(struct rt_device *dev,
                                   void             *args)
 {
     struct rt_serial_device *serial;
+    struct rt_serial_rx_fifo* rx_fifo;
 
     RT_ASSERT(dev != RT_NULL);
     serial = (struct rt_serial_device *)dev;
@@ -605,6 +615,16 @@ static rt_err_t rt_serial_control(struct rt_device *dev,
         case RT_DEVICE_CTRL_CONFIG:
             /* configure device */
             serial->ops->configure(serial, (struct serial_configure *)args);
+            break;
+        case RT_DEVICE_CTRL_SELECT:
+
+            rx_fifo = (struct rt_serial_rx_fifo*) serial->serial_rx;
+
+            *(int *)args= rx_fifo->put_index>=rx_fifo->get_index?rx_fifo->put_index-rx_fifo->get_index:rx_fifo->put_index-rx_fifo->get_index+serial->config.bufsz;
+            break;
+        case RT_DEVICE_CTRL_CLEAR:
+            rx_fifo = (struct rt_serial_rx_fifo*) serial->serial_rx;
+            rx_fifo->put_index=rx_fifo->get_index=0;
             break;
 
         default :
@@ -641,6 +661,18 @@ rt_err_t rt_hw_serial_register(struct rt_serial_device *serial,
     device->control     = rt_serial_control;
     device->user_data   = data;
 
+#ifndef WIN32
+    if(flag&RT_DEVICE_FLAG_RS422_TOGGLE)
+    {
+        serial->ops->cb_sendBefore=rs422_to_tx;
+        serial->ops->cb_sendComplete=rs422_to_rx;
+    }
+    if(flag&RT_DEVICE_FLAG_RS485_TOGGLE)
+    {
+        serial->ops->cb_sendBefore=rs485_to_tx;
+        serial->ops->cb_sendComplete=rs485_to_rx;
+    }
+#endif
     /* register a character device */
     return rt_device_register(device, name, flag);
 }
@@ -762,4 +794,61 @@ void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
             break;
         }
     }
+}
+
+void set_serial_config(struct rt_serial_device *dev,unsigned int baud,unsigned short dataBits,unsigned short stopBits,char parity)
+{
+	struct serial_configure *config=&dev->config;
+
+    config->baud_rate=baud;
+    config->data_bits=dataBits;
+    switch(stopBits)
+    {
+        default:
+        case 1:
+            config->stop_bits=STOP_BITS_1;
+            break;
+        case 2:
+            config->stop_bits=STOP_BITS_2;
+            break;
+        case 3:
+            config->stop_bits=STOP_BITS_3;
+            break;
+        case 4:
+            config->stop_bits=STOP_BITS_4;
+            break;
+    }
+    switch(parity)
+    {
+        default:
+        case 'N':
+        case 'n':
+            config->parity=RT_PARITY_NONE;
+            break;
+        case 'E':
+        case 'e':
+            config->parity=RT_PARITY_EVEN;
+            break;
+        case 'O':
+        case 'o':
+            config->parity=RT_PARITY_ODD;
+            break;
+
+    }
+}
+
+int serial_device_lock(struct rt_serial_device *dev,unsigned int time_out)
+{
+
+    RT_ASSERT(dev != RT_NULL);
+
+    return rt_sem_take(dev->lock,time_out);
+}
+
+int serial_device_unlock(struct rt_serial_device *dev)
+{
+
+    RT_ASSERT(dev != RT_NULL);
+
+    return rt_sem_release(dev->lock);
 }
