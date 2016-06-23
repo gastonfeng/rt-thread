@@ -412,6 +412,37 @@ void DMA2_Channel3_IRQHandler(void) {
 }
 #endif /* RT_USING_UART4 */
 
+
+void UART5_IRQHandler()
+{
+    const struct uart_hw_def* uart;
+
+    uart = com_5.uart;
+    USART_TypeDef *uart_device=(USART_TypeDef *)uart->uart_device;
+
+    /* enter interrupt */
+    rt_interrupt_enter();
+    if(USART_GetITStatus(uart_device, USART_IT_RXNE) != RESET)
+    {
+        rt_hw_serial_isr(&com_5, RT_SERIAL_EVENT_RX_IND);
+        /* clear interrupt */
+        USART_ClearITPendingBit(uart_device, USART_IT_RXNE);
+    }
+    if(USART_GetITStatus(uart_device, USART_IT_TC) != RESET)
+    {
+        /* clear interrupt */
+        USART_ClearITPendingBit(uart_device, USART_IT_TC);
+    }
+    while(USART_GetFlagStatus(uart_device, USART_FLAG_ORE) == SET)
+    {
+        stm32_getc((struct rt_serial_device *)&com_5);
+//        USART_ClearFlag(uart_device, USART_FLAG_ORE);
+    }
+
+    /* leave interrupt */
+    rt_interrupt_leave();
+}
+
 static void RCC_Configuration(void)
 {
 #if defined(RT_USING_UART1)
