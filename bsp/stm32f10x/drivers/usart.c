@@ -18,7 +18,7 @@
 
 #include<mcu_def.h>
 #include "stm32f10x.h"
-#include "usart.h"
+//	#include "usart.h"
 #include "board.h"
 #include <rtdevice.h>
 #include <model.h>
@@ -42,6 +42,9 @@
 #define UART4_GPIO_TX        GPIO_Pin_10
 #define UART4_GPIO_RX        GPIO_Pin_11
 #define UART4_GPIO           GPIOC
+
+#define UART_ENABLE_IRQ(n)            NVIC_EnableIRQ((n))
+#define UART_DISABLE_IRQ(n)           NVIC_DisableIRQ((n))
 
 
 /* STM32 uart driver */
@@ -266,17 +269,7 @@ static const struct rt_uart_ops stm32_uart_ops =
 
 #if defined(RT_USING_UART1)
 /* UART1 device driver structure */
-struct stm32_uart uart1 =
-{
-    USART1,
-    USART1_IRQn,
-    {
-        DMA1_Channel5,
-        DMA1_FLAG_GL5,
-        DMA1_Channel5_IRQn,
-        0,
-    },
-};
+
 struct rt_serial_device serial1;
 
 void USART1_IRQHandler(void)
@@ -303,17 +296,7 @@ void DMA1_Channel5_IRQHandler(void) {
 
 #if defined(RT_USING_UART2)
 /* UART2 device driver structure */
-struct stm32_uart uart2 =
-{
-    USART2,
-    USART2_IRQn,
-    {
-        DMA1_Channel6,
-        DMA1_FLAG_GL6,
-        DMA1_Channel6_IRQn,
-        0,
-    },
-};
+
 struct rt_serial_device serial2;
 
 void USART2_IRQHandler(void)
@@ -340,17 +323,7 @@ void DMA1_Channel6_IRQHandler(void) {
 
 #if defined(RT_USING_UART3)
 /* UART3 device driver structure */
-struct stm32_uart uart3 =
-{
-    USART3,
-    USART3_IRQn,
-    {
-        DMA1_Channel3,
-        DMA1_FLAG_GL3,
-        DMA1_Channel3_IRQn,
-        0,
-    },
-};
+
 struct rt_serial_device serial3;
 
 void USART3_IRQHandler(void)
@@ -377,17 +350,7 @@ void DMA1_Channel3_IRQHandler(void) {
 
 #if defined(RT_USING_UART4)
 /* UART4 device driver structure */
-struct stm32_uart uart4 =
-{
-    UART4,
-    UART4_IRQn,
-    {
-        DMA2_Channel3,
-        DMA2_FLAG_GL3,
-        DMA2_Channel3_IRQn,
-        0,
-    },
-};
+
 struct rt_serial_device serial4;
 
 void UART4_IRQHandler(void)
@@ -413,31 +376,13 @@ void DMA2_Channel3_IRQHandler(void) {
 #endif /* RT_USING_UART4 */
 
 
+struct rt_serial_device serial5;
+
 void UART5_IRQHandler()
 {
-    const struct uart_hw_def* uart;
-
-    uart = com_5.uart;
-    USART_TypeDef *uart_device=(USART_TypeDef *)uart->uart_device;
-
-    /* enter interrupt */
     rt_interrupt_enter();
-    if(USART_GetITStatus(uart_device, USART_IT_RXNE) != RESET)
-    {
-        rt_hw_serial_isr(&com_5, RT_SERIAL_EVENT_RX_IND);
-        /* clear interrupt */
-        USART_ClearITPendingBit(uart_device, USART_IT_RXNE);
-    }
-    if(USART_GetITStatus(uart_device, USART_IT_TC) != RESET)
-    {
-        /* clear interrupt */
-        USART_ClearITPendingBit(uart_device, USART_IT_TC);
-    }
-    while(USART_GetFlagStatus(uart_device, USART_FLAG_ORE) == SET)
-    {
-        stm32_getc((struct rt_serial_device *)&com_5);
-//        USART_ClearFlag(uart_device, USART_FLAG_ORE);
-    }
+
+    uart_isr(&serial5);
 
     /* leave interrupt */
     rt_interrupt_leave();
@@ -577,75 +522,153 @@ static void DMA_Configuration(struct rt_serial_device *serial) {
     NVIC_Init(&NVIC_InitStructure);
 }
 
-void rt_hw_usart_init(void)
+void rt_hw_usart_init(struct rt_serial_device *dev,const char *dev_name,unsigned int flag,const struct uart_hw_def *uart)
 {
-    struct stm32_uart* uart;
+    USART_ClockInitTypeDef USART_ClockInitStructure;
+    NVIC_InitTypeDef NVIC_InitStructure;
+    GPIO_InitTypeDef GPIO_InitStructure;
+//      struct uart_hw_def* uart;
     struct serial_configure config = RT_SERIAL_CONFIG_DEFAULT;
+    struct rt_serial_device *serial;
+    serial=(struct rt_serial_device *)dev;
+    USART_TypeDef *uart_device=(USART_TypeDef *)uart->uart_device;
 
-    RCC_Configuration();
-    GPIO_Configuration();
+//      RCC_Configuration();
+//      GPIO_Configuration();
 
-#if defined(RT_USING_UART1)
-    uart = &uart1;
-    config.baud_rate = BAUD_RATE_115200;
 
-    serial1.ops    = &stm32_uart_ops;
-    serial1.config = config;
+    switch((int)uart_device)
+    {
+        case(int)USART1:
+            /* uart init */
+            /* Enable USART1 and GPIOA clocks */
+            RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1 | RCC_APB2Periph_GPIOA, ENABLE);
+            USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;
+            USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;
+            USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;
+            USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;
+            USART_ClockInit(uart_device, &USART_ClockInitStructure);
 
+
+            /* Configure USART1 Rx (PA.10) as input floating */
+            GPIO_InitStructure.GPIO_Pin = UART1_GPIO_RX;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            GPIO_Init(UART1_GPIO, &GPIO_InitStructure);
+
+            /* Configure USART1 Tx (PA.09) as alternate function push-pull */
+            GPIO_InitStructure.GPIO_Pin = UART1_GPIO_TX;
+            GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+            GPIO_Init(UART1_GPIO, &GPIO_InitStructure);
+
+
+            break;
+        case(int)USART2:
+
+
+#if (defined(STM32F10X_LD) || defined(STM32F10X_MD) || defined(STM32F10X_CL))
+            /* Enable AFIO and GPIOD clock */
+            RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOD, ENABLE);
+            USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;
+            USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;
+            USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;
+            USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;
+            USART_ClockInit(uart_device, &USART_ClockInitStructure);
+
+            /* Enable the USART2 Pins Software Remapping */
+            GPIO_PinRemapConfig(GPIO_Remap_USART2, ENABLE);
+#else
+            /* Enable AFIO and GPIOA clock */
+            RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA, ENABLE);
+#endif
+
+            /* Enable USART2 clock */
+            RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+
+            /* Configure USART2 Rx as input floating */
+            GPIO_InitStructure.GPIO_Pin = UART2_GPIO_RX;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            GPIO_Init(UART2_GPIO, &GPIO_InitStructure);
+
+            /* Configure USART2 Tx as alternate function push-pull */
+            GPIO_InitStructure.GPIO_Pin = UART2_GPIO_TX;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+            GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+            GPIO_Init(UART2_GPIO, &GPIO_InitStructure);
+
+            break;
+        case(int)USART3:
+            RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO |RCC_APB2Periph_GPIOB, ENABLE);
+            /* Enable USART3 clock */
+            RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+            USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;
+            USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;
+            USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;
+            USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;
+            USART_ClockInit(uart_device, &USART_ClockInitStructure);
+
+            /* DMA clock enable */
+            //      RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+
+            /* Configure USART3 Rx as input floating */
+            GPIO_InitStructure.GPIO_Pin = UART3_GPIO_RX;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            GPIO_Init(UART3_GPIO, &GPIO_InitStructure);
+
+            /* Configure USART3 Tx as alternate function push-pull */
+            GPIO_InitStructure.GPIO_Pin = UART3_GPIO_TX;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+            GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+            GPIO_Init(UART3_GPIO, &GPIO_InitStructure);
+
+            break;
+        case(int)UART4:
+            RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO |RCC_APB2Periph_GPIOC, ENABLE);
+            /* Enable USART3 clock */
+            RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
+
+            /* Configure USART3 Rx as input floating */
+            GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+            GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+            /* Configure USART3 Tx as alternate function push-pull */
+            GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+            GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+            GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+            break;
+        case(int)UART5:
+            RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO |RCC_APB2Periph_GPIOC|RCC_APB2Periph_GPIOD, ENABLE);
+            /* Enable USART3 clock */
+            RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE);
+
+
+            /* Configure USART3 Rx as input floating */
+            GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+            GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+            GPIO_Init(GPIOD, &GPIO_InitStructure);
+
+            /* Configure USART3 Tx as alternate function push-pull */
+            GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+            GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+            GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+            GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+            break;
+    }
     NVIC_Configuration(uart);
+
+    serial->ops    = &stm32_uart_ops;
+    serial->config = config;
+ //   dev->uart=uart;
 
     /* register UART1 device */
-    rt_hw_serial_register(&serial1, "uart1",
-                          RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX | RT_DEVICE_FLAG_DMA_RX,
-                          uart);
-#endif /* RT_USING_UART1 */
-
-#if defined(RT_USING_UART2)
-    uart = &uart2;
-
-    config.baud_rate = BAUD_RATE_115200;
-    serial2.ops    = &stm32_uart_ops;
-    serial2.config = config;
-
-    NVIC_Configuration(uart);
-
-    /* register UART2 device */
-    rt_hw_serial_register(&serial2, "uart2",
-                          RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX | RT_DEVICE_FLAG_DMA_RX,
-                          uart);
-#endif /* RT_USING_UART2 */
-
-#if defined(RT_USING_UART3)
-    uart = &uart3;
-
-    config.baud_rate = BAUD_RATE_115200;
-
-    serial3.ops    = &stm32_uart_ops;
-    serial3.config = config;
-
-    NVIC_Configuration(uart);
-
-    /* register UART3 device */
-    rt_hw_serial_register(&serial3, "uart3",
-                          RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX | RT_DEVICE_FLAG_DMA_RX,
-                          uart);
-#endif /* RT_USING_UART3 */
-
-#if defined(RT_USING_UART4)
-    uart = &uart4;
-
-    config.baud_rate = BAUD_RATE_115200;
-
-    serial4.ops    = &stm32_uart_ops;
-    serial4.config = config;
-
-    NVIC_Configuration(uart);
-
-    /* register UART4 device */
-    rt_hw_serial_register(&serial4, "uart4",
-                          RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX | RT_DEVICE_FLAG_DMA_RX,
-                          uart);
-#endif /* RT_USING_UART4 */
+    rt_hw_serial_register(dev, dev_name,RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX|flag,uart);
+    serial->lock=rt_sem_create("lock", 1, RT_IPC_FLAG_FIFO);
 }
 void rs485_to_tx(void *dev)
 {

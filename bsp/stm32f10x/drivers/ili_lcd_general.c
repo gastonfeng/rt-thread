@@ -681,7 +681,7 @@ static rt_err_t lcd_control(rt_device_t dev, rt_uint8_t cmd, void *args)
     return RT_EOK;
 }
 
-void rt_hw_lcd_init(void)
+void rt_hw_lcd_init_ili(void)
 {
     /* LCD RESET */
     /* PF10 : LCD RESET */
