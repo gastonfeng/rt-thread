@@ -158,6 +158,8 @@ struct rt_serial_device
 		int isOpened;
 		//		struct rt_serial_rx_fifo *win32_fifo;
 #endif
+    void (*cb_sendBefore)(void *);
+    void (*cb_sendComplete)(void *);
 
     void *serial_rx;
     void *serial_tx;
@@ -175,8 +177,6 @@ struct rt_uart_ops
     int (*putc)(struct rt_serial_device *serial, char c);
     int (*getc)(struct rt_serial_device *serial);
 
-    void (*cb_sendBefore)(void *);
-    void (*cb_sendComplete)(void *);
 
     rt_size_t (*dma_transmit)(struct rt_serial_device *serial, rt_uint8_t *buf, rt_size_t size, int direction);
 };

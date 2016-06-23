@@ -454,7 +454,7 @@ static rt_err_t rt_serial_open(struct rt_device *dev, rt_uint16_t oflag)
             serial->serial_tx = RT_NULL;
         }
     }
-	if(serial->ops->cb_sendComplete)serial->ops->cb_sendComplete(serial);
+	if(serial->cb_sendComplete)serial->cb_sendComplete(serial);
     return RT_EOK;
 }
 
@@ -567,9 +567,9 @@ static rt_size_t rt_serial_write(struct rt_device *dev,
     if (size == 0) return 0;
 
     serial = (struct rt_serial_device *)dev;
-    if(serial->ops->cb_sendBefore)
+    if(serial->cb_sendBefore)
     {
-        serial->ops->cb_sendBefore(serial);
+        serial->cb_sendBefore(serial);
     }
     if (dev->open_flag & RT_DEVICE_FLAG_INT_TX)
     {
@@ -583,9 +583,9 @@ static rt_size_t rt_serial_write(struct rt_device *dev,
     {
         num = _serial_poll_tx(serial, (rt_uint8_t *)buffer, size);
     }
-    if(serial->ops->cb_sendComplete)
+    if(serial->cb_sendComplete)
     {
-        serial->ops->cb_sendComplete(serial);
+        serial->cb_sendComplete(serial);
     }
     return num;
 }
@@ -664,13 +664,13 @@ rt_err_t rt_hw_serial_register(struct rt_serial_device *serial,
 #ifndef WIN32
     if(flag&RT_DEVICE_FLAG_RS422_TOGGLE)
     {
-        serial->ops->cb_sendBefore=rs422_to_tx;
-        serial->ops->cb_sendComplete=rs422_to_rx;
+        serial->cb_sendBefore=rs422_to_tx;
+        serial->cb_sendComplete=rs422_to_rx;
     }
     if(flag&RT_DEVICE_FLAG_RS485_TOGGLE)
     {
-        serial->ops->cb_sendBefore=rs485_to_tx;
-        serial->ops->cb_sendComplete=rs485_to_rx;
+        serial->cb_sendBefore=rs485_to_tx;
+        serial->cb_sendComplete=rs485_to_rx;
     }
 #endif
     /* register a character device */
