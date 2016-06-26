@@ -35,6 +35,18 @@
  *
  */
 /* for IAR 6.2 later Compiler */
+struct
+{
+    unsigned short year;
+    unsigned char month;
+    unsigned char day;
+    unsigned char week;
+    unsigned char hour;
+    unsigned char minute;
+    unsigned char second;
+} date_data;
+
+#ifndef MSVC
 #if defined (__IAR_SYSTEMS_ICC__) &&  (__VER__) >= 6020000
 #pragma module_name = "?time"
 time_t (__time32)(time_t *t) /* Only supports 32-bit timestamp */
@@ -69,7 +81,7 @@ time_t time(time_t *t)
 
     return time_now;
 }
-
+#endif
 /** \brief set system date(time not modify).
  *
  * \param rt_uint32_t year  e.g: 2012.
@@ -182,3 +194,190 @@ FINSH_FUNCTION_EXPORT(list_date, show date and time.)
 FINSH_FUNCTION_EXPORT(set_date, set date. e.g: set_date(2010,2,28))
 FINSH_FUNCTION_EXPORT(set_time, set time. e.g: set_time(23,59,59))
 #endif
+
+struct tm *read_tm()
+{
+    static rt_tick_t last;
+    static struct tm *p_tm;
+    rt_tick_t c=rt_tick_get();
+    if((c-last)<RT_TICK_PER_SECOND/2)
+    {
+        return p_tm;
+    }
+
+    time_t t;
+    t = time(&t);
+    p_tm = localtime(&t);
+    last=c;
+    date_data.year=p_tm->tm_year + 1900;
+    date_data.month=p_tm->tm_mon + 1;
+    date_data.day=p_tm->tm_mday;
+    date_data.hour=p_tm->tm_hour;
+    date_data.week=p_tm->tm_wday;
+    date_data.minute=p_tm->tm_min;
+    date_data.second=p_tm->tm_sec;
+    return p_tm;
+}
+
+unsigned short get_Year()
+{
+    read_tm();
+    return date_data.year;
+}
+unsigned short get_Month()
+{
+    read_tm();
+    return date_data.month;
+}
+
+unsigned short get_Day()
+{
+    read_tm();
+    return date_data.day;
+}
+
+unsigned short get_Week()
+{
+    read_tm();
+    return date_data.week;
+}
+
+unsigned short get_Hour()
+{
+    read_tm();
+    return date_data.hour;
+}
+
+unsigned short get_Minute()
+{
+    read_tm();
+    return date_data.minute;
+}
+
+unsigned short get_Second()
+{
+    read_tm();
+    return date_data.second;
+}
+
+int SYS_YEAR(char *buf)
+{
+    return sprintf(buf, "%d", get_Year());
+}
+int SYS_MONTH(char *buf)
+{
+    return sprintf(buf, "%d", get_Month());
+}
+int SYS_DAY(char *buf)
+{
+    return sprintf(buf, "%d", get_Day());
+}
+int SYS_WEEK(char *buf)
+{
+    return sprintf(buf, "%d", get_Week());
+}
+int SYS_HOUR(char *buf)
+{
+    return sprintf(buf, "%d", get_Hour());
+}
+int SYS_MINUTE(char *buf)
+{
+    return sprintf(buf, "%d", get_Minute());
+}
+int SYS_SECOND(char *buf)
+{
+    return sprintf(buf, "%d", get_Second());
+}
+
+int set_Year(unsigned short tt)
+{
+    time_t t;
+    struct tm *p_tm;
+    if(tt==date_data.year)return RT_EOK;
+    if(tt < 2010)
+    {
+        return 1;
+    }
+    t = time(&t);
+    p_tm = localtime(&t);
+    return        set_date(tt, p_tm->tm_mon + 1, p_tm->tm_mday);
+}
+
+int set_Month(unsigned short tt)
+{
+    time_t t;
+    struct tm *p_tm;
+    if(tt==date_data.month)return RT_EOK;
+    if((tt > 12) || (tt < 1))
+    {
+        return 1;
+    }
+    t = time(&t);
+    p_tm = localtime(&t);
+    return        set_date(p_tm->tm_year + 1900, tt, p_tm->tm_mday);
+}
+
+int set_Day(unsigned short tt)
+{
+    time_t t;
+    struct tm *p_tm;
+    if(tt==date_data.day)return RT_EOK;
+    if((tt < 1) || (tt > 31))
+    {
+        return 1;
+    }
+    t = time(&t);
+    p_tm = localtime(&t);
+    return        set_date(p_tm->tm_year + 1900, p_tm->tm_mon + 1, tt);
+}
+int set_Hour(unsigned short tt)
+{
+    time_t t;
+    struct tm *p_tm;
+    if(tt==date_data.hour)return RT_EOK;
+    if(tt > 23)
+    {
+        return 1;
+    }
+    t = time(&t);
+    p_tm = localtime(&t);
+    return set_time(tt, p_tm->tm_min, p_tm->tm_sec);
+}
+int set_Minute(unsigned short tt)
+{
+    time_t t;
+    struct tm *p_tm;
+    if(tt==date_data.minute)return RT_EOK;
+    if(tt > 59)
+    {
+        return 1;
+    }
+    t = time(&t);
+    p_tm = localtime(&t);
+    return set_time(p_tm->tm_hour, tt, p_tm->tm_sec);
+}
+int set_Second(unsigned short tt)
+{
+    time_t t;
+    struct tm *p_tm;
+    if(tt==date_data.second)return RT_EOK;
+    if(tt > 59)
+    {
+        return 1;
+    }
+    t = time(&t);
+    p_tm = localtime(&t);
+    return set_time(p_tm->tm_hour, p_tm->tm_min, tt);
+}
+//  int set_all_DT(unsigned char b)
+//  {
+//      static unsigned char last;
+//      if(!last && b)
+//      {
+//          set_date(date_data.year, date_data.month, date_data.day);
+//          set_time(date_data.hour, date_data.minute, date_data.second);
+//      }
+//      last = b;
+//      return 0;
+//  }
+

@@ -14,6 +14,12 @@
 #include <rtthread.h>
 #include "s3c24x0.h"
 
+rt_uint8_t _irq_stack_start[1024];
+rt_uint8_t _fiq_stack_start[1024];
+rt_uint8_t _undefined_stack_start[512];
+rt_uint8_t _abort_stack_start[512];
+rt_uint8_t _svc_stack_start[4096] SECTION(".nobss");
+
 /**
  * @addtogroup S3C24X0
  */

@@ -14,7 +14,7 @@
  * 2008-01-29     Yi.Qiu       for QEMU emulator
  */
 
-#define CONFIG_STACKSIZE 	512
+#define CONFIG_STACKSIZE 	4096
 #define S_FRAME_SIZE 		72
 
 #define S_OLD_R0 			68
@@ -228,17 +228,18 @@ ctor_loop:
 ctor_end:
 
 	/* start RT-Thread Kernel 		*/
-	ldr		pc, _rtthread_startup
+	ldr		pc, _main
 
-_rtthread_startup: 
-	.word rtthread_startup
-#if defined (__FLASH_BUILD__)
-_load_address: 
-	.word ROM_BASE + _TEXT_BASE
-#else
-_load_address: 
-	.word RAM_BASE + _TEXT_BASE
-#endif
+_main:
+	.word main
+//	#if defined (__FLASH_BUILD__)
+//	_load_address:
+//		.word ROM_BASE + _TEXT_BASE
+//	#else
+_load_address:
+	.word _start
+//	#endif
+
 
 /*
  *************************************************************************

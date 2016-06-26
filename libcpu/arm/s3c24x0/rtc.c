@@ -152,6 +152,9 @@ static rt_err_t rtc_control(rt_device_t dev, rt_uint8_t cmd, void *args)
 	return RT_EOK;
 }
 
+#include <sys/time.h>
+struct timeval start_time;
+
 void rt_hw_rtc_init(void)
 {
 	rtc.type	= RT_Device_Class_RTC;
@@ -168,6 +171,7 @@ void rt_hw_rtc_init(void)
 	rtc.user_data = RT_NULL;
 	
 	rt_device_register(&rtc, "rtc", RT_DEVICE_FLAG_RDWR);
+    gettimeofday(&start_time,NULL);
 }
 
 #ifdef RT_USING_FINSH
