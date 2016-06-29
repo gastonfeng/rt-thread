@@ -1,4 +1,6 @@
+#include <rtthread.h>
 #include <time.h>
+#include <sys/time.h>
 
 /* days per month -- nonleap! */
 const short __spm[13] =
@@ -195,7 +197,7 @@ char *ctime(const time_t *timep)
 	return asctime(localtime(timep));
 }
 
-#ifdef RT_USING_DEVICE
+//	#ifdef RT_USING_DEVICE
 int gettimeofday(struct timeval *tp, void *ignore)
 {
 	time_t time;
@@ -216,4 +218,4 @@ int gettimeofday(struct timeval *tp, void *ignore)
 
 	return 0;
 }
-#endif
+//	#endif
