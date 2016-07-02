@@ -32,7 +32,7 @@
 #include <inttypes.h>
 #endif
 
-#ifdef STM8S003
+#if defined(STM8S003)||defined(STM8L15X_MD)
 #define assert(expr) \
 	{ \
 	if (!(expr)) \
