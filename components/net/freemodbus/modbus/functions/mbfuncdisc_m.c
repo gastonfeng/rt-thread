@@ -35,6 +35,7 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
+#include "mcu_def.h"
 #include "port.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
@@ -131,7 +132,7 @@ eMBMasterFuncReadDiscreteInputs( UCHAR * pucFrame, USHORT * usLen )
         }
 
         /* Check if the number of registers to read is valid. If not
-         * return Modbus illegal data value exception. 
+         * return Modbus illegal data value exception.
          */
 		if ((usDiscreteCnt >= 1) && ucNBytes == pucFrame[MB_PDU_FUNC_READ_DISCCNT_OFF])
         {

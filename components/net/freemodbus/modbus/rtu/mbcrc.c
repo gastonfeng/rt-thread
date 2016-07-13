@@ -29,8 +29,8 @@
  */
 
 /* ----------------------- Platform includes --------------------------------*/
+#include "mcu_def.h"
 #include "port.h"
-#ifndef CC2530
 static const UCHAR aucCRCHi[] = {
     0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
     0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
@@ -96,4 +96,3 @@ usMBCRC16( UCHAR * pucFrame, USHORT usLen )
     }
     return ( USHORT )( ucCRCHi << 8 | ucCRCLo );
 }
-#endif

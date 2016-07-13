@@ -22,7 +22,7 @@
 #ifndef _PORT_H
 #define _PORT_H
 
-#include <mcu_def.h>
+//#include <mcu_def.h>
 
 #include "mbconfig.h"
 
