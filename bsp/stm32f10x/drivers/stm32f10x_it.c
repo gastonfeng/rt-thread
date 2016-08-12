@@ -334,6 +334,11 @@ void  FSMC_IRQHandler()
 {
 }
 
+void  TIM4_IRQHandler()
+{
+    rt_hw_irq(TIM4_IRQn);
+}
+
 void  TIM5_IRQHandler()
 {
     rt_hw_irq(TIM5_IRQn);
