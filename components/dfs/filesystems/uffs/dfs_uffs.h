@@ -29,7 +29,7 @@
 #include "uffs/uffs_public.h"
 
 /* the UFFS ECC mode opitons  */
-/* #define RT_CONFIG_UFFS_ECC_MODE  UFFS_ECC_HW_AUTO */
+#define RT_CONFIG_UFFS_ECC_MODE  UFFS_ECC_HW_AUTO
 /* #define RT_CONFIG_UFFS_ECC_MODE  UFFS_ECC_SOFT */
 /* #define RT_CONFIG_UFFS_ECC_MODE  UFFS_ECC_NONE */
 

@@ -485,7 +485,7 @@ RTM_EXPORT(statfs);
  *
  * @return 0 on successful, others on failed.
  */
-int mkdir(const char *path, mode_t mode)
+int mkdir(const char *path, int mode)
 {
     int fd;
     struct dfs_fd *d;

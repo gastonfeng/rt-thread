@@ -101,7 +101,7 @@ typedef struct
 } DIR;
 
 /* directory api*/
-int mkdir(const char *path, mode_t mode);
+int mkdir(const char *path, int mode);
 DIR *opendir(const char *name);
 struct dirent *readdir(DIR *d);
 long telldir(DIR *d);

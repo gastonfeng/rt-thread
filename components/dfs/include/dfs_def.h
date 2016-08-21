@@ -157,12 +157,12 @@
 #define DFS_DT_DIR               DT_DIR
 
 #else
-    #ifdef RT_USING_MINILIBC
-        #include <string.h>
-    #else
-        typedef long off_t;
-        typedef int mode_t;
-    #endif
+#ifdef RT_USING_MINILIBC
+#include <string.h>
+#else
+typedef long off_t;
+//          typedef int mode_t;
+#endif
 
 /* Device error codes */
 #define DFS_STATUS_OK            0       /* no error */
