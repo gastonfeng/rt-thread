@@ -796,9 +796,9 @@ void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
     }
 }
 
-void set_serial_config(struct rt_serial_device *dev,unsigned int baud,unsigned short dataBits,unsigned short stopBits,char parity)
+void set_serial_config(void *dev,unsigned int baud,unsigned short dataBits,unsigned short stopBits,char parity)
 {
-	struct serial_configure *config=&dev->config;
+	struct serial_configure *config=&(struct rt_serial_device *)dev->config;
 
     config->baud_rate=baud;
     config->data_bits=dataBits;
