@@ -1079,24 +1079,29 @@ RTM_EXPORT(rt_console_get_device);
  */
 rt_device_t rt_console_set_device(const char *name)
 {
-    rt_device_t new, old;
+    rt_device_t new_dev, old;
 
     /* save old device */
     old = _console_device;
 
     /* find new console device */
-    new = rt_device_find(name);
-    if (new != RT_NULL)
+    if(name[0] == 'n' && name[1] == 'o')
     {
-        if (_console_device != RT_NULL)
+        _console_device = (rt_device_t) RT_EEMPTY;
+        return RT_NULL;
+    }
+    new_dev = rt_device_find(name);
+    if(new_dev != RT_NULL)
+    {
+        if(_console_device != RT_NULL)
         {
             /* close old console device */
             rt_device_close(_console_device);
         }
 
         /* set new console device */
-        rt_device_open(new, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_STREAM);
-        _console_device = new;
+        _console_device = new_dev;
+        rt_device_open(_console_device, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_STREAM|RT_DEVICE_FLAG_INT_RX);
     }
 
     return old;
@@ -1120,7 +1125,10 @@ void rt_kprintf(const char *fmt, ...)
     va_list args;
     rt_size_t length;
     static char rt_log_buf[RT_CONSOLEBUF_SIZE];
-
+    if((unsigned int)_console_device == RT_EEMPTY)
+    {
+        return;
+    }
     va_start(args, fmt);
     /* the return value of vsnprintf is the number of bytes that would be
      * written to buffer had if the size of the buffer been sufficiently
