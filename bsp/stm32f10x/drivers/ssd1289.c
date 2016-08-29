@@ -474,7 +474,7 @@ static rt_err_t lcd_control(rt_device_t dev, rt_uint8_t cmd, void *args)
 	return RT_EOK;
 }
 
-void rt_hw_lcd_init(void)
+void rt_hw_lcd_init_ssd1289(void)
 {
     /* LCD RESET */
     /* PF10 : LCD RESET */
@@ -491,7 +491,7 @@ void rt_hw_lcd_init(void)
         GPIO_ResetBits(GPIOF,GPIO_Pin_10);
         GPIO_SetBits(GPIOF,GPIO_Pin_10);
         /* wait for lcd reset */
-        rt_thread_delay(1);
+//        rt_thread_delay(1);
     }
 
 	/* register lcd device */
