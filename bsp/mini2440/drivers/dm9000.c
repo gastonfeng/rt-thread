@@ -1,5 +1,5 @@
-#include <rtthread.h>
-#include <netif/ethernetif.h>
+#include<mcu_def.h>
+#include "lan_config.h"
 
 #include "dm9000.h"
 #include <s3c24x0.h>
@@ -26,45 +26,10 @@
 #define DM9000_PHY		  0x40	/* PHY address 0x01 */
 
 #define MAX_ADDR_LEN 6
-enum DM9000_PHY_mode
-{
-	DM9000_10MHD = 0, DM9000_100MHD = 1,
-	DM9000_10MFD = 4, DM9000_100MFD = 5,
-	DM9000_AUTO  = 8, DM9000_1M_HPNA = 0x10
-};
-
-enum DM9000_TYPE
-{
-	TYPE_DM9000E,
-	TYPE_DM9000A,
-	TYPE_DM9000B
-};
-
-struct rt_dm9000_eth
-{
-	/* inherit from ethernet device */
-	struct eth_device parent;
-
-	enum DM9000_TYPE type;
-	enum DM9000_PHY_mode mode;
-
-	rt_uint8_t packet_cnt;				  /* packet I or II */
-	rt_uint16_t queue_packet_len;		   /* queued packet (packet II) */
-
-	/* interface address info. */
-	rt_uint8_t  dev_addr[MAX_ADDR_LEN];		/* hw address	*/
-};
-static struct rt_dm9000_eth dm9000_device;
+struct rt_lan_eth lan_device;
 static struct rt_semaphore sem_ack, sem_lock;
 
 void rt_dm9000_isr(int irqno);
-
-static void delay_ms(rt_uint32_t ms)
-{
-	rt_uint32_t len;
-	for (;ms > 0; ms --)
-		for (len = 0; len < 100; len++ );
-}
 
 /* Read a byte from I/O port */
 rt_inline rt_uint8_t dm9000_io_read(rt_uint16_t reg)
@@ -164,23 +129,23 @@ void rt_dm9000_isr(int irqno)
 
 	DM9000_TRACE("dm9000 isr: int status %04x\n", int_status);
 
-	/* receive overflow */
-	if (int_status & ISR_ROS)
-	{
-		rt_kprintf("overflow\n");
-	}
+    /* receive overflow */
+    if(int_status & ISR_ROS)
+    {
+        rt_kprintf("overflow %s,%d\n",__FILE__,__LINE__);
+    }
 
-	if (int_status & ISR_ROOS)
-	{
-		rt_kprintf("overflow counter overflow\n");
-	}
+    if(int_status & ISR_ROOS)
+    {
+        rt_kprintf("overflow counter overflow %s ,%d\n",__FILE__,__LINE__);
+    }
 
-	/* Received the coming packet */
-	if (int_status & ISR_PRS)
-	{
-		/* a frame has been received */
-		eth_device_ready(&(dm9000_device.parent));
-	}
+    /* Received the coming packet */
+    if(int_status & ISR_PRS)
+    {
+        /* a frame has been received */
+        eth_device_ready(&(lan_device.parent));
+    }
 
 	/* Transmit Interrupt check */
 	if (int_status & ISR_PTS)
@@ -188,17 +153,17 @@ void rt_dm9000_isr(int irqno)
 		/* transmit done */
 		int tx_status = dm9000_io_read(DM9000_NSR);	/* Got TX status */
 
-		if (tx_status & (NSR_TX2END | NSR_TX1END))
-		{
-			dm9000_device.packet_cnt --;
-			if (dm9000_device.packet_cnt > 0)
-			{
-				DM9000_TRACE("dm9000 isr: tx second packet\n");
+        if(tx_status & (NSR_TX2END | NSR_TX1END))
+        {
+            lan_device.packet_cnt --;
+            if(lan_device.packet_cnt > 0)
+            {
+                DM9000_TRACE("dm9000 isr: tx second packet\n");
 
-				/* transmit packet II */
-				/* Set TX length to DM9000 */
-				dm9000_io_write(DM9000_TXPLL, dm9000_device.queue_packet_len & 0xff);
-				dm9000_io_write(DM9000_TXPLH, (dm9000_device.queue_packet_len >> 8) & 0xff);
+                /* transmit packet II */
+                /* Set TX length to DM9000 */
+                dm9000_io_write(DM9000_TXPLL, lan_device.queue_packet_len & 0xff);
+                dm9000_io_write(DM9000_TXPLH, (lan_device.queue_packet_len >> 8) & 0xff);
 
 				/* Issue TX polling command */
 				dm9000_io_write(DM9000_TCR, TCR_TXREQ);	/* Cleared after TX complete */
@@ -214,107 +179,7 @@ void rt_dm9000_isr(int irqno)
 
 	DM9000_IO = last_io;
 }
-
-/* RT-Thread Device Interface */
-/* initialize the interface */
-static rt_err_t rt_dm9000_init(rt_device_t dev)
-{
-	int i, oft, lnk;
-	rt_uint32_t value;
-
-	/* RESET device */
-	dm9000_io_write(DM9000_NCR, NCR_RST);
-	delay_ms(1000);		/* delay 1ms */
-
-	/* identfy DM9000 */
-	value  = dm9000_io_read(DM9000_VIDL);
-	value |= dm9000_io_read(DM9000_VIDH) << 8;
-	value |= dm9000_io_read(DM9000_PIDL) << 16;
-	value |= dm9000_io_read(DM9000_PIDH) << 24;
-	if (value == DM9000_ID)
-	{
-		rt_kprintf("dm9000 id: 0x%x\n", value);
-	}
-	else
-	{
-		rt_kprintf("dm9000 id: 0x%x\n", value);
-		return -RT_ERROR;
-	}
-
-	/* GPIO0 on pre-activate PHY */
-	dm9000_io_write(DM9000_GPR, 0x00);				/* REG_1F bit0 activate phyxcer */
-	dm9000_io_write(DM9000_GPCR, GPCR_GEP_CNTL);	/* Let GPIO0 output */
-	dm9000_io_write(DM9000_GPR, 0x00);				 /* Enable PHY */
-
-	/* Set PHY */
-	phy_mode_set(dm9000_device.mode);
-
-	/* Program operating register */
-	dm9000_io_write(DM9000_NCR, 0x0);	/* only intern phy supported by now */
-	dm9000_io_write(DM9000_TCR, 0);		/* TX Polling clear */
-	dm9000_io_write(DM9000_BPTR, 0x3f);	/* Less 3Kb, 200us */
-	dm9000_io_write(DM9000_FCTR, FCTR_HWOT(3) | FCTR_LWOT(8));	/* Flow Control : High/Low Water */
-	dm9000_io_write(DM9000_FCR, 0x0);	/* SH FIXME: This looks strange! Flow Control */
-	dm9000_io_write(DM9000_SMCR, 0);	/* Special Mode */
-	dm9000_io_write(DM9000_NSR, NSR_WAKEST | NSR_TX2END | NSR_TX1END);	/* clear TX status */
-	dm9000_io_write(DM9000_ISR, 0x0f);	/* Clear interrupt status */
-	dm9000_io_write(DM9000_TCR2, 0x80);	/* Switch LED to mode 1 */
-
-	/* set mac address */
-	for (i = 0, oft = 0x10; i < 6; i++, oft++)
-		dm9000_io_write(oft, dm9000_device.dev_addr[i]);
-	/* set multicast address */
-	for (i = 0, oft = 0x16; i < 8; i++, oft++)
-		dm9000_io_write(oft, 0xff);
-
-	/* Activate DM9000 */
-	dm9000_io_write(DM9000_RCR, RCR_DIS_LONG | RCR_DIS_CRC | RCR_RXEN);	/* RX enable */
-	dm9000_io_write(DM9000_IMR, IMR_PAR);
-
-	if (dm9000_device.mode == DM9000_AUTO)
-	{
-	    i = 0;
-		while (!(phy_read(1) & 0x20))
-		{
-			/* autonegation complete bit */
-			rt_thread_delay( RT_TICK_PER_SECOND/10 );
-			i++;
-			if (i > 30 ) /* wait 3s */
-			{
-				rt_kprintf("could not establish link\n");
-				return 0;
-			}
-		}
-	}
-
-	/* see what we've got */
-	lnk = phy_read(17) >> 12;
-	rt_kprintf("operating at ");
-	switch (lnk)
-	{
-	case 1:
-		rt_kprintf("10M half duplex ");
-		break;
-	case 2:
-		rt_kprintf("10M full duplex ");
-		break;
-	case 4:
-		rt_kprintf("100M half duplex ");
-		break;
-	case 8:
-		rt_kprintf("100M full duplex ");
-		break;
-	default:
-		rt_kprintf("unknown: %d ", lnk);
-		break;
-	}
-	rt_kprintf("mode\n");
-
-	/* Enable TX/RX interrupt mask */
-	dm9000_io_write(DM9000_IMR,IMR_PAR | IMR_PTM | IMR_PRM);
-
-	return RT_EOK;
-}
+void dm9000a(void);
 
 static rt_err_t rt_dm9000_open(rt_device_t dev, rt_uint16_t oflag)
 {
@@ -346,13 +211,19 @@ static rt_size_t rt_dm9000_write (rt_device_t dev, rt_off_t pos, const void* buf
 
 static rt_err_t rt_dm9000_control(rt_device_t dev, rt_uint8_t cmd, void *args)
 {
-	switch (cmd)
-	{
-	case NIOCTL_GADDR:
-		/* get mac address */
-		if (args) rt_memcpy(args, dm9000_device.dev_addr, 6);
-		else return -RT_ERROR;
-		break;
+    switch(cmd)
+    {
+        case NIOCTL_GADDR:
+            /* get mac address */
+            if(args)
+            {
+                rt_memcpy(args, lan_device.dev_addr, 6);
+            }
+            else
+            {
+                return -RT_ERROR;
+            }
+            break;
 
 	default :
 		break;
@@ -411,14 +282,14 @@ rt_err_t rt_dm9000_tx( rt_device_t dev, struct pbuf* p)
 		}
 	}
 
-	if (dm9000_device.packet_cnt == 0)
-	{
-		DM9000_TRACE("dm9000 tx: first packet\n");
+    if(lan_device.packet_cnt == 0)
+    {
+        DM9000_TRACE("dm9000 tx: first packet\n");
 
-		dm9000_device.packet_cnt ++;
-		/* Set TX length to DM9000 */
-		dm9000_io_write(DM9000_TXPLL, p->tot_len & 0xff);
-		dm9000_io_write(DM9000_TXPLH, (p->tot_len >> 8) & 0xff);
+        lan_device.packet_cnt ++;
+        /* Set TX length to DM9000 */
+        dm9000_io_write(DM9000_TXPLL, p->tot_len & 0xff);
+        dm9000_io_write(DM9000_TXPLH, (p->tot_len >> 8) & 0xff);
 
 		/* Issue TX polling command */
 		dm9000_io_write(DM9000_TCR, TCR_TXREQ);	/* Cleared after TX complete */
@@ -427,9 +298,9 @@ rt_err_t rt_dm9000_tx( rt_device_t dev, struct pbuf* p)
 	{
 		DM9000_TRACE("dm9000 tx: second packet\n");
 
-		dm9000_device.packet_cnt ++;
-		dm9000_device.queue_packet_len = p->tot_len;
-	}
+        lan_device.packet_cnt ++;
+        lan_device.queue_packet_len = p->tot_len;
+    }
 
 	/* enable dm9000a interrupt */
 	dm9000_io_write(DM9000_IMR, IMR_PAR | IMR_PTM | IMR_PRM);
@@ -437,8 +308,8 @@ rt_err_t rt_dm9000_tx( rt_device_t dev, struct pbuf* p)
 	/* unlock DM9000 device */
 	rt_sem_release(&sem_lock);
 
-	/* wait ack */
-	rt_sem_take(&sem_ack, RT_WAITING_FOREVER);
+    /* wait ack */
+    rt_sem_take(&sem_ack, RT_TICK_PER_SECOND*5);
 
 	DM9000_TRACE("dm9000 tx done\n");
 
@@ -542,9 +413,12 @@ __error_retry:
 				rt_thread_delay(1); /* delay 5ms */
 			}
 
-			/* it issues an error, release pbuf */
-			if (p != RT_NULL) pbuf_free(p);
-			p = RT_NULL;
+            /* it issues an error, release pbuf */
+            if(p != RT_NULL)
+            {
+                pbuf_free(p);
+            }
+            p = RT_NULL;
 
 			goto __error_retry;
 		}
@@ -588,57 +462,165 @@ void INTEINT4_7_handler(int irqno, void *param)
 	EINTPEND = eint_pend;
 }
 
-void rt_hw_dm9000_init()
+/* RT-Thread Device Interface */
+/* initialize the interface */
+static rt_err_t rt_dm9000_init(rt_device_t dev)
 {
-	/* Set GPF7 as EINT7 */
-	GPFCON = GPFCON & (~(3 << 14)) | (2 << 14);
-	GPFUP = GPFUP | (1 << 7);
-	/* EINT7 High level interrupt */
-	EXTINT0 = (EXTINT0 & (~(0x7 << 28))) | (0x1 << 28);
-	/* Enable EINT7 */
-	EINTMASK = EINTMASK & (~(1<<7));
-	/* Set GPA15 as nGCS4 */
-	GPACON |= 1 << 15;
-	/* DM9000 width 16, wait enable */
-	BWSCON = BWSCON & (~(0x7<<16)) | (0x5<<16);
-	BANKCON4 = (1<<13) | (1<<11) | (0x6<<8) | (1<<6) | (1<<4) | (0<<2) | (0);
+    int i, oft, lnk;
+    rt_uint32_t value;
+//dm_etry:
+    /* RESET device */
+    dm9000_io_write(DM9000_NCR, NCR_RST);
+    delay_ms(1000);   /* delay 1ms */
+
+    /* identfy DM9000 */
+    value  = dm9000_io_read(DM9000_VIDL);
+    value |= dm9000_io_read(DM9000_VIDH) << 8;
+    value |= dm9000_io_read(DM9000_PIDL) << 16;
+    value |= dm9000_io_read(DM9000_PIDH) << 24;
+    if(value == DM9000_ID)
+    {
+        rt_kprintf("dm9000 id: 0x%x\n", value);
+    }
+    else
+    {
+        rt_kprintf("ERROR:dm9000 id: 0x%x\n", value);
+        return -RT_ERROR;
+    }
+
+    /* instal interrupt */
+    rt_hw_interrupt_install(INTEINT4_7, INTEINT4_7_handler, RT_NULL, "EINT4_7");
+    rt_hw_interrupt_umask(INTEINT4_7);
+
+    /* GPIO0 on pre-activate PHY */
+    dm9000_io_write(DM9000_GPR, 0x00);        /* REG_1F bit0 activate phyxcer */
+    dm9000_io_write(DM9000_GPCR, GPCR_GEP_CNTL);  /* Let GPIO0 output */
+    dm9000_io_write(DM9000_GPR, 0x00);         /* Enable PHY */
+
+    /* Set PHY */
+    phy_mode_set(lan_device.mode);
+
+    /* Program operating register */
+    dm9000_io_write(DM9000_NCR, 0x0); /* only intern phy supported by now */
+    dm9000_io_write(DM9000_TCR, 0);   /* TX Polling clear */
+    dm9000_io_write(DM9000_BPTR, 0x3f); /* Less 3Kb, 200us */
+    dm9000_io_write(DM9000_FCTR, FCTR_HWOT(3) | FCTR_LWOT(8));  /* Flow Control : High/Low Water */
+    dm9000_io_write(DM9000_FCR, 0x0); /* SH FIXME: This looks strange! Flow Control */
+    dm9000_io_write(DM9000_SMCR, 0);  /* Special Mode */
+    dm9000_io_write(DM9000_NSR, NSR_WAKEST | NSR_TX2END | NSR_TX1END);  /* clear TX status */
+    dm9000_io_write(DM9000_ISR, 0x0f);  /* Clear interrupt status */
+    dm9000_io_write(DM9000_TCR2, 0x80); /* Switch LED to mode 1 */
+
+    /* set mac address */
+    for(i = 0, oft = 0x10; i < 6; i++, oft++)
+    {
+        dm9000_io_write(oft, lan_device.dev_addr[i]);
+    }
+    /* set multicast address */
+    for(i = 0, oft = 0x16; i < 8; i++, oft++)
+    {
+        dm9000_io_write(oft, 0xff);
+    }
+
+    /* Activate DM9000 */
+    dm9000_io_write(DM9000_RCR, RCR_DIS_LONG | RCR_DIS_CRC | RCR_RXEN); /* RX enable */
+    dm9000_io_write(DM9000_IMR, IMR_PAR);
+
+    if(lan_device.mode == DM9000_AUTO)
+    {
+        i = 0;
+        while(!(phy_read(1) & 0x20))
+        {
+            /* autonegation complete bit */
+            rt_thread_delay(RT_TICK_PER_SECOND / 10);
+            i++;
+            if(i > 30)   /* wait 3s */
+            {
+                rt_kprintf("could not establish link\n");
+//  dm9000a();
+//  goto dm_etry;
+                return 0;
+            }
+        }
+    }
+
+    /* see what we've got */
+    lnk = phy_read(17) >> 12;
+    rt_kprintf("operating at ");
+    switch(lnk)
+    {
+        case 1:
+            rt_kprintf("10M half duplex ");
+            break;
+        case 2:
+            rt_kprintf("10M full duplex ");
+            break;
+        case 4:
+            rt_kprintf("100M half duplex ");
+            break;
+        case 8:
+            rt_kprintf("100M full duplex ");
+            break;
+        default:
+            rt_kprintf("unknown: %d ", lnk);
+            break;
+    }
+    rt_kprintf("mode\n");
+
+    /* Enable TX/RX interrupt mask */
+    dm9000_io_write(DM9000_IMR, IMR_PAR | IMR_PTM | IMR_PRM);
+
+    return RT_EOK;
+}
+
+void rt_hw_eth_init(const hw_lan_def *dat)
+{
+    /* Set GPF7 as EINT7 */
+    GPFCON = GPFCON & (~(3 << 14)) | (2 << 14);
+    GPFUP = GPFUP | (1 << 7);
+    /* EINT7 High level interrupt */
+    EXTINT0 = (EXTINT0 & (~(0x7 << 28))) | (0x1 << 28);
+    /* Enable EINT7 */
+    EINTMASK = EINTMASK & (~(1 << 7));
+    /* Set GPA15 as nGCS4 */
+    GPACON |= 1 << 15;
+    /* DM9000 width 16, wait enable */
+    BWSCON = BWSCON & (~(0x7 << 16)) | (0x5 << 16);
+    BANKCON4 = (1 << 13) | (1 << 11) | (0x6 << 8) | (1 << 6) | (1 << 4) | (0 << 2) | (0);
 
 	rt_sem_init(&sem_ack, "tx_ack", 1, RT_IPC_FLAG_FIFO);
 	rt_sem_init(&sem_lock, "eth_lock", 1, RT_IPC_FLAG_FIFO);
 
-	dm9000_device.type  = TYPE_DM9000A;
-	dm9000_device.mode	= DM9000_AUTO;
-	dm9000_device.packet_cnt = 0;
-	dm9000_device.queue_packet_len = 0;
+    lan_device.type  = TYPE_DM9000A;
+    lan_device.mode = DM9000_AUTO;
+    lan_device.packet_cnt = 0;
+    lan_device.queue_packet_len = 0;
 
 	/*
 	 * SRAM Tx/Rx pointer automatically return to start address,
 	 * Packet Transmitted, Packet Received
 	 */
 
-	dm9000_device.dev_addr[0] = 0x00;
-	dm9000_device.dev_addr[1] = 0x60;
-	dm9000_device.dev_addr[2] = 0x6E;
-	dm9000_device.dev_addr[3] = 0x11;
-	dm9000_device.dev_addr[4] = 0x02;
-	dm9000_device.dev_addr[5] = 0x0F;
+    lan_device.dev_addr[0] = 0x00;
+    lan_device.dev_addr[1] = 0x60;
+    lan_device.dev_addr[2] = 0x6E;
+    lan_device.dev_addr[3] = 0x11;
+    lan_device.dev_addr[4] = 0x02;
+    lan_device.dev_addr[5] = 0x0F;
 
-	dm9000_device.parent.parent.init	   = rt_dm9000_init;
-	dm9000_device.parent.parent.open	   = rt_dm9000_open;
-	dm9000_device.parent.parent.close	   = rt_dm9000_close;
-	dm9000_device.parent.parent.read	   = rt_dm9000_read;
-	dm9000_device.parent.parent.write	   = rt_dm9000_write;
-	dm9000_device.parent.parent.control	= rt_dm9000_control;
-	dm9000_device.parent.parent.user_data  = RT_NULL;
+    lan_device.parent.parent.init    = rt_dm9000_init;
+    lan_device.parent.parent.open    = rt_dm9000_open;
+    lan_device.parent.parent.close     = rt_dm9000_close;
+    lan_device.parent.parent.read    = rt_dm9000_read;
+    lan_device.parent.parent.write     = rt_dm9000_write;
+    lan_device.parent.parent.control  = rt_dm9000_control;
+    lan_device.parent.parent.user_data  = RT_NULL;
 
-	dm9000_device.parent.eth_rx	 = rt_dm9000_rx;
-	dm9000_device.parent.eth_tx	 = rt_dm9000_tx;
+    lan_device.parent.eth_rx   = rt_dm9000_rx;
+    lan_device.parent.eth_tx   = rt_dm9000_tx;
 
-	eth_device_init(&(dm9000_device.parent), "e0");
+    eth_device_init(&(lan_device.parent), "eth0");
 
-	/* instal interrupt */
-	rt_hw_interrupt_install(INTEINT4_7, INTEINT4_7_handler, RT_NULL, "EINT4_7");
-	rt_hw_interrupt_umask(INTEINT4_7);
 }
 
 void dm9000a(void)
