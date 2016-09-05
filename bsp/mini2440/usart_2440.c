@@ -10,21 +10,6 @@
 #define UART1   ((uartport *)&U1BASE)
 #define UART2   ((uartport *)&U2BASE)
 
-typedef struct uartport
-{
-	volatile rt_uint32_t ulcon;
-	volatile rt_uint32_t ucon;
-	volatile rt_uint32_t ufcon;
-	volatile rt_uint32_t umcon;
-	volatile rt_uint32_t ustat;
-	volatile rt_uint32_t urxb;
-	volatile rt_uint32_t ufstat;
-	volatile rt_uint32_t umstat;
-	volatile rt_uint32_t utxh;
-	volatile rt_uint32_t urxh;
-	volatile rt_uint32_t ubrd;
-}uartport;
-
 
 struct rt_serial_device  com_1,com_2,com_3;
 

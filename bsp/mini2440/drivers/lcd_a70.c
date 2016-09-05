@@ -167,7 +167,7 @@ static void LcdBkLtSet(rt_uint32_t HiRatio)
 
 /* RT-Thread Device Interface */
 static rt_err_t rt_lcd_init (rt_device_t dev)
-{	
+{
 	GPB1_TO_OUT();
 	GPB1_TO_1();
 
@@ -213,7 +213,7 @@ static rt_err_t rt_lcd_control (rt_device_t dev, rt_uint8_t cmd, void *args)
 		break;
 	case RTGRAPHIC_CTRL_POWEROFF:
 		break;
-	case RTGRAPHIC_CTRL_GET_INFO:		
+	case RTGRAPHIC_CTRL_GET_INFO:
 		rt_memcpy(args, &_lcd_info, sizeof(_lcd_info));
 		break;
 	case RTGRAPHIC_CTRL_SET_MODE:
@@ -223,7 +223,7 @@ static rt_err_t rt_lcd_control (rt_device_t dev, rt_uint8_t cmd, void *args)
 	return RT_EOK;
 }
 
-void rt_hw_lcd_init(void)
+void rt_hw_lcd_init_2440(void)
 {
 	rt_device_t lcd = rt_malloc(sizeof(struct rt_device));
 	if (lcd == RT_NULL) return; /* no memory yet */
@@ -241,7 +241,7 @@ void rt_hw_lcd_init(void)
 	lcd->close = RT_NULL;
 	lcd->control = rt_lcd_control;
 	lcd->user_data = (void*)&_lcd_info;
-	
+
 	/* register lcd device to RT-Thread */
 	rt_device_register(lcd, "lcd", RT_DEVICE_FLAG_RDWR);
 }
