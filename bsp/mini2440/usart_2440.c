@@ -11,7 +11,7 @@
 #define UART2   ((uartport *)&U2BASE)
 
 
-struct rt_serial_device  com_1,com_2,com_3;
+struct rt_serial_device  serial1,serial2,serial3;
 
 
 static rt_err_t s3c2440_configure(struct rt_serial_device  *serial, struct serial_configure *cfg)
