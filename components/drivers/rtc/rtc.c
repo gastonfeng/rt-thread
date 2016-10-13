@@ -209,7 +209,7 @@ struct tm *read_tm()
     t = time(&t);
     p_tm = localtime(&t);
     last=c;
-    date_data.year=p_tm->tm_year + 2000;
+    date_data.year=p_tm->tm_year + 1900;
     date_data.month=p_tm->tm_mon + 1;
     date_data.day=p_tm->tm_mday;
     date_data.hour=p_tm->tm_hour;
