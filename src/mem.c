@@ -76,7 +76,7 @@ static void (*rt_free_hook)(void *ptr);
  * @addtogroup Hook
  */
 
-/*@{*/
+/**@{*/
 
 /**
  * This function will set a hook function, which will be invoked when a memory
@@ -100,7 +100,7 @@ void rt_free_sethook(void (*hook)(void *ptr))
     rt_free_hook = hook;
 }
 
-/*@}*/
+/**@}*/
 
 #endif
 
@@ -255,7 +255,7 @@ void rt_system_heap_init(void *begin_addr, void *end_addr)
  * @addtogroup MM
  */
 
-/*@{*/
+/**@{*/
 
 /**
  * Allocate a block of memory with a minimum of 'size' bytes.
@@ -614,7 +614,7 @@ FINSH_FUNCTION_EXPORT(list_mem, list memory usage information)
 #endif
 #endif
 
-/*@}*/
+/**@}*/
 
 #endif /* end of RT_USING_HEAP */
 #endif /* end of RT_USING_MEMHEAP_AS_HEAP */
