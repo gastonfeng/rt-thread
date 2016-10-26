@@ -649,7 +649,7 @@ static void copyfile(const char *src, const char *dst)
     rt_free(block_ptr);
 }
 
-extern int mkdir(const char *path, mode_t mode);
+extern int mkdir(const char *path, int mode);
 static void copydir(const char * src, const char * dst)
 {
     struct dirent dirent;
