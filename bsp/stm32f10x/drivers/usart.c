@@ -277,11 +277,6 @@ static void uart_isr(struct rt_serial_device *serial)
         /* clear interrupt */
         USART_ClearITPendingBit(((USART_TypeDef *)uart->uart_device), USART_IT_TC);
     }
-    if (USART_GetFlagStatus(((USART_TypeDef *)uart->uart_device), USART_IT_ORE) == SET)
-    {
-        stm32_getc(serial);
-//        USART_ClearITPendingBit(((USART_TypeDef *)uart->uart_device), USART_IT_ORE);
-    }
 }
 
 static const struct rt_uart_ops stm32_uart_ops =
