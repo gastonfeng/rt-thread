@@ -50,7 +50,7 @@ struct rtgui_touch_device
 
     rt_uint16_t min_x, max_x;
     rt_uint16_t min_y, max_y;
-    const spi_io_def *chip;
+    const touch_chip_t *chip;
 	const lcd_t *lcd;
 };
 static struct rtgui_touch_device *touch_dev = RT_NULL;
@@ -104,19 +104,19 @@ unsigned char ads7843_WriteByte(unsigned char data)
         {
             readbyte = readbyte << 1;
             buf = (data >> (7 - i)) & 0x1; //MSB在前,LSB在后
-            touch_set_pin(touch_dev->chip->mosi, buf); //时钟上升沿锁存DIN
+            touch_set_pin(touch_dev->chip->spi.mosi, buf); //时钟上升沿锁存DIN
 
             for(j = 0; j < 25; j++); //200ns
 
-            touch_set_pin(touch_dev->chip->clk, 1); //开始发送命令字
+            touch_set_pin(touch_dev->chip->spi.clk, 1); //开始发送命令字
 
             for(j = 0; j < 25; j++); //200ns
 
-            if(touch_get_pin(touch_dev->chip->miso))
+            if(touch_get_pin(touch_dev->chip->spi.miso))
             {
                 readbyte++;
             }
-            touch_set_pin(touch_dev->chip->clk, 0); //时钟脉冲，一共8个
+            touch_set_pin(touch_dev->chip->spi.clk, 0); //时钟脉冲，一共8个
         }
     }
 
@@ -155,7 +155,7 @@ static void rtgui_touch_calculate()
             for(i = 0; i < FILTER_TIMES_TOUCH; i++)
             {
                 //                  for(j = 0; j < 250; j++); //200ns
-                touch_set_pin(touch_dev->chip->cs, 0);
+                touch_set_pin(touch_dev->chip->spi.cs, 0);
                 for(j = 0; j < 100; j++); //200ns
                 ads7843_WriteByte(TOUCH_MSR_X);
 
@@ -192,7 +192,7 @@ static void rtgui_touch_calculate()
 
                 ads7843_WriteByte(1 << 7);   /* 打开中断 */
 //                                      for(j = 0; j < 250; j++); //200ns
-                touch_set_pin(touch_dev->chip->cs, 1);
+                touch_set_pin(touch_dev->chip->spi.cs, 1);
                 if(touch_get_pin(touch_dev->chip->irq) != 0)
                 {
                     return;
@@ -451,11 +451,11 @@ static rt_err_t rtgui_touch_init(rt_device_t dev)
 
     hw_gpio_exti_init(touch_dev->chip->irq, 0xc);
 
-    touch_set_pin(touch_dev->chip->cs, 1);
-    touch_set_pin(touch_dev->chip->cs, 0);
+    touch_set_pin(touch_dev->chip->spi.cs, 1);
+    touch_set_pin(touch_dev->chip->spi.cs, 0);
 
     ads7843_WriteByte(1 << 7);   /* 打开中断 */
-    touch_set_pin(touch_dev->chip->cs, 1);
+    touch_set_pin(touch_dev->chip->spi.cs, 1);
 
     return RT_EOK;
 }
@@ -492,7 +492,6 @@ static rt_err_t rtgui_touch_control(rt_device_t dev, rt_uint8_t cmd, void *args)
     return RT_EOK;
 }
 
-extern const spi_io_def touch;
 
 void rt_hw_touch_init()
 {
@@ -505,7 +504,7 @@ void rt_hw_touch_init()
                            RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOG, ENABLE);
 #endif
     /* 配置 推挽输出，用于 TP_CS  */
-    hw_gpio_out_init(touch.cs);
+    hw_gpio_out_init(touch.spi.cs);
 
     /* 配置 PB5 引脚为上拉输入，用于 TP_BUSY */
     if(touch.busy.port)
@@ -513,9 +512,9 @@ void rt_hw_touch_init()
         hw_gpio_in_init(touch.busy, 1);
     }
 
-    hw_gpio_out_init(touch.mosi);
-    hw_gpio_out_init(touch.clk);
-    hw_gpio_in_init(touch.miso, 1);
+    hw_gpio_out_init(touch.spi.mosi);
+    hw_gpio_out_init(touch.spi.clk);
+    hw_gpio_in_init(touch.spi.miso, 1);
     touch_dev = (struct rtgui_touch_device *)rt_malloc(sizeof(struct rtgui_touch_device));
     if(touch_dev == RT_NULL)
     {
