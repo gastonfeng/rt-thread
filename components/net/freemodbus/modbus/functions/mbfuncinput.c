@@ -54,6 +54,8 @@
 eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 
 /* ----------------------- Start implementation -----------------------------*/
+eMBException	(*cbMBFuncReadInputRegister)( UCHAR * pucFrame, USHORT * usLen )=0;
+
 #if MB_FUNC_READ_INPUT_ENABLED > 0
 
 eMBException

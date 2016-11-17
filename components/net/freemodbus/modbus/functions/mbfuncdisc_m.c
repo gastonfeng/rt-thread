@@ -57,6 +57,7 @@
 eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 
 /* ----------------------- Start implementation -----------------------------*/
+eMBMasterReqErrCode (*cbMBMasterReqReadDiscreteInputs)( UCHAR ucSndAddr, USHORT usDiscreteAddr, USHORT usNDiscreteIn, LONG lTimeOut )=0;
 #if MB_MASTER_RTU_ENABLED > 0 || MB_MASTER_ASCII_ENABLED > 0
 #if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
 

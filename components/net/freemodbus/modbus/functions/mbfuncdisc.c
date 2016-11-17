@@ -43,6 +43,7 @@
 eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 
 /* ----------------------- Start implementation -----------------------------*/
+eMBException (*cbMBFuncReadDiscreteInputs)( UCHAR * pucFrame, USHORT * usLen )=0;
 
 #if MB_FUNC_READ_COILS_ENABLED > 0
 

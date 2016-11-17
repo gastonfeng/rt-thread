@@ -42,6 +42,9 @@
 #include "mbproto.h"
 #include "mbconfig.h"
 
+
+eMBErrorCode (*cbMBSetSlaveID)( UCHAR ucSlaveID, BOOL xIsRunning,               UCHAR const *pucAdditional, USHORT usAdditionalLen );
+
 #if MB_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
 
 /* ----------------------- Static variables ---------------------------------*/
