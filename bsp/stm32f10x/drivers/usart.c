@@ -719,11 +719,7 @@ void rs485_to_rx(void *dev)
 {
     struct rt_serial_device *serial=(struct rt_serial_device *)dev;
     struct uart_hw_def *hw=(struct uart_hw_def *)serial->parent.user_data;
-#ifdef STM32
-    while (!(((USART_TypeDef *)hw->uart_device)->SR & USART_FLAG_TXE));
-#else
-    while(!(hw->uart_device->ustat & USTAT_EMPTY));
-#endif
+    while (!(((USART_TypeDef *)hw->uart_device)->SR & USART_FLAG_TC));
 //    rt_thread_delay(2);
     hw_gpio_out(hw->tx_en, 0);
 }
@@ -732,12 +728,8 @@ void rs422_to_rx(void *dev)
 {
     struct rt_serial_device *serial=(struct rt_serial_device *)dev;
     struct uart_hw_def *hw=(struct uart_hw_def *)serial->parent.user_data;
-#ifdef STM32
-    while (!(((USART_TypeDef *)hw->uart_device)->SR & USART_FLAG_TXE));
-#else
-    while(!(hw->uart_device->ustat & USTAT_EMPTY));
-#endif
-    rt_thread_delay(2);
+    while (!(((USART_TypeDef *)hw->uart_device)->SR & USART_FLAG_TC));
+//    rt_thread_delay(2);
     hw_gpio_out(hw->tx_en, 0);
     hw_gpio_out(hw->rx_en, 0);
 }
