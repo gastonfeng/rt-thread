@@ -724,7 +724,7 @@ void rs485_to_rx(void *dev)
 #else
     while(!(hw->uart_device->ustat & USTAT_EMPTY));
 #endif
-    rt_thread_delay(2);
+//    rt_thread_delay(2);
     hw_gpio_out(hw->tx_en, 0);
 }
 
