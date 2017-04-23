@@ -527,24 +527,6 @@ char *rt_strdup(const char *s)
 RTM_EXPORT(rt_strdup);
 #endif
 
-int IsLittleEndian()//原理：联合体union的存放顺序是所有成员都从低地址开始存放，而且所有成员共享存储空间
-{
-    union temp
-    {
-        short int a;
-        char b;
-    } temp;
-    temp.a = 0x1234;
-    if(temp.b == 0x12)  //低字节存的是数据的高字节数据
-    {
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
-}
-
 /**
  * This function will show the version of rt-thread rtos
  */
@@ -554,8 +536,7 @@ void rt_show_version(void)
     rt_kprintf("- RT -     Thread Operating System\n");
     rt_kprintf(" / | \\     %d.%d.%d build %s\n",
                RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__);
-    rt_kprintf(" 2006 - 2016 Copyright by rt-thread team\n");
-	print_cpuinfo();
+    rt_kprintf(" 2006 - 2017 Copyright by rt-thread team\n");
 }
 RTM_EXPORT(rt_show_version);
 
@@ -1133,6 +1114,31 @@ WEAK void rt_hw_console_output(const char *str)
     /* empty console output */
 }
 RTM_EXPORT(rt_hw_console_output);
+
+/**
+ * This function will put string to the console.
+ *
+ * @param str the string output to the console.
+ */
+void rt_kputs(const char *str)
+{
+#ifdef RT_USING_DEVICE
+    if (_console_device == RT_NULL)
+    {
+        rt_hw_console_output(str);
+    }
+    else
+    {
+        rt_uint16_t old_flag = _console_device->open_flag;
+
+        _console_device->open_flag |= RT_DEVICE_FLAG_STREAM;
+        rt_device_write(_console_device, 0, str, rt_strlen(str));
+        _console_device->open_flag = old_flag;
+    }
+#else
+    rt_hw_console_output(str);
+#endif
+}
 
 /**
  * This function will print a formatted string on system console

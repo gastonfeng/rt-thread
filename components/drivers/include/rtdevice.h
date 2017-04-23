@@ -134,7 +134,6 @@ struct rt_data_queue
 {
     rt_uint16_t size;
     rt_uint16_t lwm;
-    rt_bool_t   waiting_lwm;
 
     rt_uint16_t get_index;
     rt_uint16_t put_index;
@@ -151,8 +150,9 @@ struct rt_data_queue
 /* workqueue implementation */
 struct rt_workqueue
 {
-	rt_list_t   work_list;
-	rt_thread_t work_thread;
+	rt_list_t      work_list;
+	struct rt_work *work_current; /* current work */
+	rt_thread_t    work_thread;
 };
 
 struct rt_work

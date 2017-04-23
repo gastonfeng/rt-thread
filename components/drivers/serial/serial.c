@@ -31,6 +31,7 @@
  *                             in open function.
  * 2015-11-10     bernard      fix the poll rx issue when there is no data.
  * 2016-05-10     armink       add fifo mode to DMA rx when serial->config.bufsz != 0.
+ * 2017-01-19     aubr.cool    prevent change serial rx bufsz when serial is opened.
  */
 
 #include <mcu_def.h>
@@ -166,14 +167,15 @@ rt_inline int _serial_int_tx(struct rt_serial_device *serial, const rt_uint8_t *
  *
  * @return length
  */
-static rt_size_t rt_dma_calc_recved_len(struct rt_serial_device *serial) {
-    static rt_size_t rx_length;
-    struct rt_serial_rx_fifo *rx_fifo = (struct rt_serial_rx_fifo *)serial->serial_rx;
+static rt_size_t rt_dma_calc_recved_len(struct rt_serial_device *serial)
+{
+    rt_size_t rx_length;
+    struct rt_serial_rx_fifo *rx_fifo = (struct rt_serial_rx_fifo *) serial->serial_rx;
 
     RT_ASSERT(rx_fifo != RT_NULL);
 
-    rx_length = (rx_fifo->put_index >= rx_fifo->get_index)? (rx_fifo->put_index - rx_fifo->get_index):
-                        (serial->config.bufsz - (rx_fifo->get_index - rx_fifo->put_index));
+    rx_length = (rx_fifo->put_index >= rx_fifo->get_index) ? (rx_fifo->put_index - rx_fifo->get_index):
+                    (serial->config.bufsz - (rx_fifo->get_index - rx_fifo->put_index));
     return rx_length;
 }
 
@@ -183,14 +185,16 @@ static rt_size_t rt_dma_calc_recved_len(struct rt_serial_device *serial) {
  * @param serial serial device
  * @param len get data length for this operate
  */
-static void rt_dma_recv_update_get_index(struct rt_serial_device *serial, rt_size_t len) {
-    struct rt_serial_rx_fifo *rx_fifo = (struct rt_serial_rx_fifo *)serial->serial_rx;
+static void rt_dma_recv_update_get_index(struct rt_serial_device *serial, rt_size_t len)
+{
+    struct rt_serial_rx_fifo *rx_fifo = (struct rt_serial_rx_fifo *) serial->serial_rx;
 
     RT_ASSERT(rx_fifo != RT_NULL);
     RT_ASSERT(len <= rt_dma_calc_recved_len(serial));
 
     rx_fifo->get_index += len;
-    if (rx_fifo->get_index > serial->config.bufsz ) {
+    if (rx_fifo->get_index > serial->config.bufsz)
+    {
         rx_fifo->get_index -= serial->config.bufsz;
     }
 }
@@ -201,37 +205,41 @@ static void rt_dma_recv_update_get_index(struct rt_serial_device *serial, rt_siz
  * @param serial serial device
  * @param len received length for this transmit
  */
-static void rt_dma_recv_update_put_index(struct rt_serial_device *serial, rt_size_t len) {
+static void rt_dma_recv_update_put_index(struct rt_serial_device *serial, rt_size_t len)
+{
     struct rt_serial_rx_fifo *rx_fifo = (struct rt_serial_rx_fifo *)serial->serial_rx;
-    rt_size_t i;
 
     RT_ASSERT(rx_fifo != RT_NULL);
 
-    if (rx_fifo->get_index <= rx_fifo->put_index) {
+    if (rx_fifo->get_index <= rx_fifo->put_index)
+    {
         rx_fifo->put_index += len;
         /* beyond the fifo end */
-        if (rx_fifo->put_index >= serial->config.bufsz) {
-            for (i = 0; i <= len / serial->config.bufsz; i++) {
-                rx_fifo->put_index -= serial->config.bufsz;
-            }
+        if (rx_fifo->put_index >= serial->config.bufsz)
+        {
+            rx_fifo->put_index %= serial->config.bufsz;
             /* force overwrite get index */
-            if (rx_fifo->put_index >= rx_fifo->get_index) {
+            if (rx_fifo->put_index >= rx_fifo->get_index)
+            {
                 rx_fifo->get_index = rx_fifo->put_index + 1;
             }
         }
-    } else {
+    }
+    else
+    {
         rx_fifo->put_index += len;
-        if(rx_fifo->put_index >= rx_fifo->get_index) {
+        if (rx_fifo->put_index >= rx_fifo->get_index)
+        {
             /* beyond the fifo end */
-            if(rx_fifo->put_index >= serial->config.bufsz) {
-                for (i = 0; i <= len / serial->config.bufsz; i++) {
-                    rx_fifo->put_index -= serial->config.bufsz;
-                }
+            if (rx_fifo->put_index >= serial->config.bufsz)
+            {
+                rx_fifo->put_index %= serial->config.bufsz;
             }
             /* force overwrite get index */
             rx_fifo->get_index = rx_fifo->put_index + 1;
         }
     }
+    if (rx_fifo->get_index >= serial->config.bufsz) rx_fifo->get_index = 0;
 }
 
 /*
@@ -613,17 +621,22 @@ static rt_err_t rt_serial_control(struct rt_device *dev,
             break;
 
         case RT_DEVICE_CTRL_CONFIG:
-			if (args)
-			{
-				/* set serial configure */
-				serial->config = *(struct serial_configure *)args;
-
-				if (dev->ref_count)
-				{
-		            /* serial device has been opened, to configure it */
-		            serial->ops->configure(serial, (struct serial_configure *)args);
-				}
-			}
+            if (args)
+            {
+                struct serial_configure *pconfig = (struct serial_configure *) args;
+                if (pconfig->bufsz != serial->config.bufsz && serial->parent.ref_count)
+                {
+                    /*can not change buffer size*/
+                    return RT_EBUSY;
+                }
+                /* set serial configure */
+                serial->config = *pconfig;
+                if (serial->parent.ref_count)
+                {
+                    /* serial device has been opened, to configure it */
+                    serial->ops->configure(serial, (struct serial_configure *) args);
+                }
+            }
 			
             break;
         case RT_DEVICE_CTRL_SELECT:
@@ -780,25 +793,36 @@ void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
         case RT_SERIAL_EVENT_RX_DMADONE:
         {
             int length;
+            rt_base_t level;
 
             /* get DMA rx length */
             length = (event & (~0xff)) >> 8;
 
-            if (serial->config.bufsz == 0) {
+            if (serial->config.bufsz == 0)
+            {
                 struct rt_serial_rx_dma* rx_dma;
 
-                rx_dma = (struct rt_serial_rx_dma*)serial->serial_rx;
+                rx_dma = (struct rt_serial_rx_dma*) serial->serial_rx;
                 RT_ASSERT(rx_dma != RT_NULL);
 
                 RT_ASSERT(serial->parent.rx_indicate != RT_NULL);
                 serial->parent.rx_indicate(&(serial->parent), length);
                 rx_dma->activated = RT_FALSE;
-            } else {
+            }
+            else
+            {
+                /* disable interrupt */
+                level = rt_hw_interrupt_disable();
                 /* update fifo put index */
                 rt_dma_recv_update_put_index(serial, length);
+                /* calculate received total length */
+                length = rt_dma_calc_recved_len(serial);
+                /* enable interrupt */
+                rt_hw_interrupt_enable(level);
                 /* invoke callback */
-                if (serial->parent.rx_indicate != RT_NULL) {
-                    serial->parent.rx_indicate(&(serial->parent), rt_dma_calc_recved_len(serial));
+                if (serial->parent.rx_indicate != RT_NULL)
+                {
+                    serial->parent.rx_indicate(&(serial->parent), length);
                 }
             }
             break;
